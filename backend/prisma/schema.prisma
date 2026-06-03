@@ -1,0 +1,173 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgvector(map: "vector")]
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String
+  passwordHash  String?
+  createdAt     DateTime   @default(now())
+
+  documents     Document[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Document {
+  id          String     @id @default(cuid())
+  userId      String
+  title       String
+  fileUrl     String
+  totalPages  Int
+  status      DocumentStatus @default(PROCESSING)
+  createdAt   DateTime   @default(now())
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapters    Chapter[]
+  sessions    Session[]
+  chunks      DocumentChunk[]
+
+  @@map("documents")
+}
+
+model Chapter {
+  id          String     @id @default(cuid())
+  documentId  String
+  label       String
+  title       String
+  pageStart   Int
+  pageEnd     Int
+  orderIndex  Int
+
+  document        Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sessionChapters SessionChapter[]
+  questions       Question[]
+  chunks          DocumentChunk[]
+
+  @@map("chapters")
+}
+
+model Session {
+  id             String        @id @default(cuid())
+  userId         String
+  documentId     String
+  mode           SessionMode
+  totalQuestions Int           @default(0)
+  currentStep    Int           @default(0)
+  isCompleted    Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  completedAt    DateTime?
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document        Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sessionChapters SessionChapter[]
+  questions       Question[]
+  messages        Message[]
+  answerScores    AnswerScore[]
+
+  @@map("sessions")
+}
+
+model SessionChapter {
+  id        String  @id @default(cuid())
+  sessionId String
+  chapterId String
+
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, chapterId])
+  @@map("session_chapters")
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  sessionId  String
+  chapterId  String
+  content    String
+  orderIndex Int
+
+  session      Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  chapter      Chapter       @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  messages     Message[]
+  answerScores AnswerScore[]
+
+  @@map("questions")
+}
+
+model Message {
+  id         String      @id @default(cuid())
+  sessionId  String
+  questionId String
+  subTurn    Int         @default(0)
+  role       MessageRole
+  content    String
+  createdAt  DateTime    @default(now())
+
+  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model AnswerScore {
+  id               String   @id @default(cuid())
+  sessionId        String
+  questionId       String
+  methodologyScore Int
+  theoryScore      Int
+  argumentScore    Int
+  isSatisfied      Boolean
+  rebuttal         String?
+  createdAt        DateTime @default(now())
+
+  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("answer_scores")
+}
+
+model DocumentChunk {
+  id         String                  @id @default(cuid())
+  documentId String
+  chapterId  String
+  content    String
+  embedding  Unsupported("vector(1536)")
+  createdAt  DateTime                @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chapter  Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+}
+
+enum DocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+
+  @@map("document_status")
+}
+
+enum SessionMode {
+  QUICK
+  STANDARD
+  DEEP
+
+  @@map("session_mode")
+}
+
+enum MessageRole {
+  USER
+  AI
+
+  @@map("message_role")
+}
