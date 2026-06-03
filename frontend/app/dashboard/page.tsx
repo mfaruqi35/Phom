@@ -245,7 +245,7 @@ function FileUploadZone({
               </svg>
             </div>
             <p className="text-[#111827] font-semibold text-base mb-1">
-              Jatuhkan PDF skripsimu disini
+              Jatuhkan PDF skripsimu di sini
             </p>
             <p className="text-[#6B7280] text-sm mb-6">
               atau klik untuk mencari langsung dari komputermu
@@ -338,11 +338,11 @@ function FocusArea({
 
   return (
     <div className="w-full">
-      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
+      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-4">
         Area Fokus
       </p>
 
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-row flex-wrap gap-1.5 justify-center">
         {availableChapters.map((chapter) => {
           const isSelected = selectedIds.includes(chapter.id);
           return (
@@ -350,7 +350,7 @@ function FocusArea({
               id={`dashboard-focus-${chapter.id}`}
               key={chapter.id}
               onClick={() => onToggle(chapter.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all duration-150 ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 whitespace-nowrap ${
                 isSelected
                   ? "bg-[#4F46E5] border-[#4F46E5] text-white"
                   : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#4F46E5] hover:text-[#4F46E5]"
@@ -374,11 +374,12 @@ function SimulationModeSelector({
 }) {
   return (
     <div className="w-full">
-      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
+      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-4">
         Mode Simulasi
       </p>
 
-      <div className="grid grid-cols-3 gap-3">
+      {/* Mobile: vertical list | sm+: 3-column grid */}
+      <div className="flex flex-col gap-2 sm:grid sm:grid-cols-3 sm:gap-3">
         {SIMULATION_MODES.map((mode) => {
           const isSelected = selected === mode.id;
           return (
@@ -386,14 +387,28 @@ function SimulationModeSelector({
               id={`dashboard-mode-${mode.id}`}
               key={mode.id}
               onClick={() => onSelect(mode.id)}
-              className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all duration-150 ${
+              className={`relative flex items-center gap-3 p-3 sm:p-4 rounded-xl border text-left transition-all duration-150 sm:flex-col sm:items-start ${
                 isSelected
                   ? "border-[#4F46E5] bg-[#EEF2FF]"
-                  : "border-[#E5E7EB] bg-white hover:border-[#4F46E5]/50"
+                  : "border-[#E5E7EB] bg-white hover:border-[#4F46E5]/40 hover:bg-[#F9FAFB]"
               }`}
             >
-              <span className="text-xl flex-shrink-0">{mode.icon}</span>
-              <div>
+              {/* Selected indicator strip on mobile */}
+              {isSelected && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[#4F46E5] sm:hidden" />
+              )}
+
+              {/* Icon */}
+              <div
+                className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-lg sm:w-8 sm:h-8 sm:text-base ${
+                  isSelected ? "bg-[#4F46E5]/10" : "bg-[#F3F4F6]"
+                }`}
+              >
+                {mode.icon}
+              </div>
+
+              {/* Text */}
+              <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-semibold leading-tight ${
                     isSelected ? "text-[#4F46E5]" : "text-[#111827]"
@@ -405,6 +420,23 @@ function SimulationModeSelector({
                   {mode.description}
                 </p>
               </div>
+
+              {/* Checkmark on mobile when selected */}
+              {isSelected && (
+                <svg
+                  className="sm:hidden flex-shrink-0 text-[#4F46E5]"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
             </button>
           );
         })}
