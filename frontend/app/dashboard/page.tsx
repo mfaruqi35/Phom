@@ -18,9 +18,27 @@ interface Chapter {
 
 const INITIAL_CHAPTERS: Chapter[] = [
   { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
-  { id: "2", label: "II", title: "Tinjauan Pustaka", pageStart: "11", pageEnd: "25" },
-  { id: "3", label: "III", title: "Metodologi", pageStart: "26", pageEnd: "45" },
-  { id: "4", label: "IV", title: "Hasil & Pembahasan", pageStart: "", pageEnd: "" },
+  {
+    id: "2",
+    label: "II",
+    title: "Tinjauan Pustaka",
+    pageStart: "11",
+    pageEnd: "25",
+  },
+  {
+    id: "3",
+    label: "III",
+    title: "Metodologi",
+    pageStart: "26",
+    pageEnd: "45",
+  },
+  {
+    id: "4",
+    label: "IV",
+    title: "Hasil & Pembahasan",
+    pageStart: "",
+    pageEnd: "",
+  },
   { id: "5", label: "V", title: "Penutup", pageStart: "", pageEnd: "" },
 ];
 
@@ -56,31 +74,21 @@ function DashboardHeader() {
           className="text-[#4F46E5] font-bold text-base tracking-tight"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Thesis AI
-        </span>
-        <span className="text-[#9CA3AF] text-[10px] font-medium tracking-widest uppercase">
-          Defense Simulator
+          Logo Phom
         </span>
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-[#374151] text-sm font-medium">
-          <span className="text-base">🎓</span>
-          <span>Defense Simulator</span>
-        </div>
-
         {/* Avatar + name */}
         <button
           id="dashboard-avatar-btn"
           className="flex items-center gap-2.5 rounded-full pl-1 pr-3 py-1 hover:bg-[#F3F4F6] transition-colors"
         >
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-semibold">
-            A
+            As
           </div>
-          <span className="text-sm font-medium text-[#111827]">
-            Dr. Aris Setiawan
-          </span>
+          <span className="text-sm font-medium text-[#111827]">Nama User</span>
         </button>
       </div>
     </header>
@@ -117,7 +125,10 @@ function FileUploadZone({
     <div
       id="dashboard-upload-zone"
       onDrop={handleDrop}
-      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
       onDragLeave={() => setIsDragging(false)}
       className={`relative w-full rounded-2xl border-2 border-dashed transition-all duration-200 ${
         isDragging
@@ -147,7 +158,16 @@ function FileUploadZone({
               className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
               title="Remove file"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
                 <path d="M10 11v6M14 11v6" />
@@ -158,9 +178,32 @@ function FileUploadZone({
             {/* PDF icon */}
             <div className="w-14 h-14 rounded-xl bg-[#EEF2FF] flex items-center justify-center mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <rect x="4" y="2" width="16" height="20" rx="2" fill="#4F46E5" fillOpacity="0.15" stroke="#4F46E5" strokeWidth="1.5"/>
-                <path d="M9 7h6M9 11h6M9 15h4" stroke="#4F46E5" strokeWidth="1.5" strokeLinecap="round"/>
-                <text x="4" y="22" fontSize="5" fill="#4F46E5" fontWeight="bold">PDF</text>
+                <rect
+                  x="4"
+                  y="2"
+                  width="16"
+                  height="20"
+                  rx="2"
+                  fill="#4F46E5"
+                  fillOpacity="0.15"
+                  stroke="#4F46E5"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M9 7h6M9 11h6M9 15h4"
+                  stroke="#4F46E5"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <text
+                  x="4"
+                  y="22"
+                  fontSize="5"
+                  fill="#4F46E5"
+                  fontWeight="bold"
+                >
+                  PDF
+                </text>
               </svg>
             </div>
 
@@ -169,7 +212,9 @@ function FileUploadZone({
             </p>
             <p className="text-[#6B7280] text-sm mb-6">
               {formatSize(uploadedFile.size)}{" "}
-              <span className="text-[#22C55E] font-medium">• Ready for analysis</span>
+              <span className="text-[#22C55E] font-medium">
+                • Ready for analysis
+              </span>
             </p>
 
             <button
@@ -183,25 +228,34 @@ function FileUploadZone({
         ) : (
           <>
             <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] flex items-center justify-center mb-4">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="18" x2="12" y2="12"/>
-                <line x1="9" y1="15" x2="15" y2="15"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#9CA3AF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="12" y1="18" x2="12" y2="12" />
+                <line x1="9" y1="15" x2="15" y2="15" />
               </svg>
             </div>
             <p className="text-[#111827] font-semibold text-base mb-1">
-              Drop your thesis PDF here
+              Jatuhkan PDF skripsimu disini
             </p>
             <p className="text-[#6B7280] text-sm mb-6">
-              or click to browse from your computer
+              atau klik untuk mencari langsung dari komputermu
             </p>
             <button
               id="dashboard-browse-btn"
               onClick={() => inputRef.current?.click()}
               className="px-5 py-2 rounded-lg bg-[#4F46E5] text-white text-sm font-medium hover:bg-[#4338CA] transition-colors"
             >
-              Browse PDF
+              Cari PDF
             </button>
           </>
         )}
@@ -220,17 +274,17 @@ function ChapterPageRanges({
   const handleChange = (
     id: string,
     field: "pageStart" | "pageEnd",
-    value: string
+    value: string,
   ) => {
     onChange(
-      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch))
+      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch)),
     );
   };
 
   return (
     <div className="w-full">
       <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
-        Chapter Page Ranges
+        Rentang Halaman Bab
       </p>
 
       <div className="space-y-3 max-w-lg mx-auto">
@@ -244,9 +298,11 @@ function ChapterPageRanges({
                 id={`dashboard-chapter-${chapter.id}-start`}
                 type="number"
                 min="1"
-                placeholder="Start"
+                placeholder="Awal"
                 value={chapter.pageStart}
-                onChange={(e) => handleChange(chapter.id, "pageStart", e.target.value)}
+                onChange={(e) =>
+                  handleChange(chapter.id, "pageStart", e.target.value)
+                }
                 className="w-16 h-9 rounded-lg border border-[#E5E7EB] bg-white text-center text-sm text-[#374151] placeholder:text-[#D1D5DB] focus:outline-none focus:border-[#4F46E5] transition-colors"
               />
               <span className="text-[#D1D5DB]">—</span>
@@ -254,9 +310,11 @@ function ChapterPageRanges({
                 id={`dashboard-chapter-${chapter.id}-end`}
                 type="number"
                 min="1"
-                placeholder="End"
+                placeholder="Akhir"
                 value={chapter.pageEnd}
-                onChange={(e) => handleChange(chapter.id, "pageEnd", e.target.value)}
+                onChange={(e) =>
+                  handleChange(chapter.id, "pageEnd", e.target.value)
+                }
                 className="w-16 h-9 rounded-lg border border-[#E5E7EB] bg-white text-center text-sm text-[#374151] placeholder:text-[#D1D5DB] focus:outline-none focus:border-[#4F46E5] transition-colors"
               />
             </div>
@@ -276,14 +334,12 @@ function FocusArea({
   selectedIds: string[];
   onToggle: (id: string) => void;
 }) {
-  const availableChapters = chapters.filter(
-    (ch) => ch.pageStart && ch.pageEnd
-  );
+  const availableChapters = chapters.filter((ch) => ch.pageStart && ch.pageEnd);
 
   return (
     <div className="w-full">
       <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
-        Focus Area
+        Area Fokus
       </p>
 
       <div className="flex flex-wrap gap-2 justify-center">
@@ -319,7 +375,7 @@ function SimulationModeSelector({
   return (
     <div className="w-full">
       <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
-        Simulation Mode
+        Mode Simulasi
       </p>
 
       <div className="grid grid-cols-3 gap-3">
@@ -363,17 +419,18 @@ export default function DashboardPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
   const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>(["3"]);
-  const [simulationMode, setSimulationMode] = useState<SimulationMode>("standard");
+  const [simulationMode, setSimulationMode] =
+    useState<SimulationMode>("standard");
 
   const toggleChapter = (id: string) => {
     setSelectedChapterIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
   const readyChapters = chapters.filter((ch) => ch.pageStart && ch.pageEnd);
   const selectedFocusChapters = chapters.filter((ch) =>
-    selectedChapterIds.includes(ch.id)
+    selectedChapterIds.includes(ch.id),
   );
 
   const canStartSimulation =
@@ -382,11 +439,15 @@ export default function DashboardPage() {
     selectedChapterIds.length > 0;
 
   const getStatusText = () => {
-    if (!uploadedFile) return "Upload your thesis to get started";
-    if (readyChapters.length === 0) return "Define chapter page ranges to continue";
-    if (selectedChapterIds.length === 0) return "Select at least one focus area";
+    if (!uploadedFile) return "Unggah skripsimu untuk mulai";
+    if (readyChapters.length === 0)
+      return "Define chapter page ranges to continue";
+    if (selectedChapterIds.length === 0)
+      return "Select at least one focus area";
     const chapterNames = selectedFocusChapters.map((ch) => ch.title).join(", ");
-    const modeLabel = SIMULATION_MODES.find((m) => m.id === simulationMode)?.title;
+    const modeLabel = SIMULATION_MODES.find(
+      (m) => m.id === simulationMode,
+    )?.title;
     return `System ready for ${chapterNames} · ${modeLabel}`;
   };
 
@@ -401,10 +462,10 @@ export default function DashboardPage() {
             className="text-2xl font-bold text-[#111827] mb-2"
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            Simulator Workspace
+            Ruang Kerja
           </h1>
           <p className="text-sm text-[#6B7280]">
-            Upload your thesis manuscript to begin the AI-powered defense simulation.
+            Unggah draft skripsimu untuk memulai simulasi sidang.
           </p>
         </div>
 
@@ -449,7 +510,7 @@ export default function DashboardPage() {
             }`}
             style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            Start Simulation
+            Mulai Simulasi
             <svg
               width="18"
               height="18"
@@ -464,7 +525,9 @@ export default function DashboardPage() {
             </svg>
           </button>
 
-          <p className="text-xs text-[#9CA3AF] text-center">{getStatusText()}</p>
+          <p className="text-xs text-[#9CA3AF] text-center">
+            {getStatusText()}
+          </p>
         </div>
       </main>
     </div>
