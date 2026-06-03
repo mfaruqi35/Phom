@@ -203,6 +203,80 @@ Jumlah aktual ditentukan oleh RAG service berdasarkan konten bab yang dipilih, b
 
 ---
 
+## Naming Conventions
+
+- All variable names, function names, and code comments use English
+- File names use kebab-case (e.g. `document-service.ts`, `answer-scores.ts`)
+- Database column names use snake_case
+- TypeScript/JavaScript variables and functions use camelCase
+- Constants use UPPER_SNAKE_CASE
+- React components use PascalCase
+
+---
+
+## API Response Format
+
+All backend endpoints return a consistent JSON structure.
+
+**Success:**
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Error:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "DOCUMENT_NOT_FOUND",
+    "message": "Document with the given ID does not exist."
+  }
+}
+```
+
+**Paginated:**
+
+```json
+{
+  "success": true,
+  "data": [ ... ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 42
+  }
+}
+```
+
+Error `code` is a constant string used by the frontend for programmatic error handling. HTTP status codes are still used alongside this format (200, 201, 400, 401, 403, 404, 500).
+
+---
+
+## Tech Stack
+
+| Layer             | Teknologi                                       |
+| ----------------- | ----------------------------------------------- |
+| Frontend          | Next.js + Tailwind + Shadcn UI                  |
+| Backend API       | Hono + Prisma + Bun                             |
+| AI/RAG Service    | FastAPI + OpenAI SDK + Anthropic SDK + pgvector |
+| Embedding Model   | `text-embedding-3-small` (OpenAI, dimensi 1536) |
+| LLM               | `claude-haiku-4-5` (Anthropic)                  |
+| Database          | Supabase (PostgreSQL + pgvector)                |
+| Auth              | Better Auth + Google OAuth plugin               |
+| Storage PDF       | Supabase Storage                                |
+| Frontend Deploy   | Vercel                                          |
+| Backend Deploy    | Railway atau Render                             |
+| AI Service Deploy | Railway atau Render                             |
+
+RAG service menggunakan dua SDK sekaligus: OpenAI SDK khusus untuk embedding, Anthropic SDK khusus untuk LLM. Frontend tidak pernah memanggil kedua SDK ini secara langsung.
+
+---
+
 ## Monetisasi
 
 Ditunda sampai setelah validasi produk. Semua fitur dibuka gratis untuk MVP.
