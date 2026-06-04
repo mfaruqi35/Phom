@@ -105,7 +105,7 @@ export const getDocumentStatus = async (c: Context) => {
 
 export const getUserDocuments = async (c: Context) => {
   try {
-    const userId = "temp-user-id";
+    const userId = "1";
     const documents = await getUserDocumentsService(userId);
 
     return c.json({ success: true, data: documents });
