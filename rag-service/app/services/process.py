@@ -20,7 +20,7 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes, page_start: int, page_end: int
 
     return text.strip()
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]:
+def chunk_text(text: str, chunk_size: int = 200, overlap: int = 50) -> List[str]:
     words = text.split()
     chunks = []
     i = 0
