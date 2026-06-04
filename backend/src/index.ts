@@ -6,6 +6,7 @@ import sessions from "./routes/sessions";
 import messages from "./routes/messages";
 import answerScores from "./routes/answer-scores";
 import evaluation from "./routes/evaluation";
+import questions from "./routes/questions";
 
 const app = new Hono();
 
@@ -19,6 +20,7 @@ app.route("/api/sessions", sessions);
 app.route("/api/messages", messages);
 app.route("/api/answer-scores", answerScores);
 app.route("/api/evaluation", evaluation);
+app.route("/api/questions", questions);
 
 export default {
   port: 3000,
