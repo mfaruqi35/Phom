@@ -56,7 +56,7 @@ export const createMessageService = async (data: CreateMessageInput) => {
         },
       });
 
-      await prisma.session.update({
+      await prisma.simulationSession.update({
         where: { id: data.sessionId },
         data: { currentStep: { increment: 1 } },
       });

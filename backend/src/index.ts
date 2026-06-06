@@ -7,12 +7,15 @@ import messages from "./routes/messages";
 import answerScores from "./routes/answer-scores";
 import evaluation from "./routes/evaluation";
 import questions from "./routes/questions";
+import { authMiddleware } from "./middleware/auth";
 
 const app = new Hono();
 
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
+app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
+
+app.use("/api/*", authMiddleware);
 
 app.route("/api/documents", documents);
 app.route("/api/chapters", chapters);

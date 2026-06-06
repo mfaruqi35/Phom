@@ -13,7 +13,7 @@ export const createSessionService = async ({
   mode,
   chapterIds,
 }: CreateSessionInput) => {
-  const session = await prisma.session.create({
+  const session = await prisma.simulationSession.create({
     data: {
       userId,
       documentId,
@@ -34,7 +34,7 @@ export const createSessionService = async ({
 };
 
 export const getSessionService = async (id: string) => {
-  return prisma.session.findUnique({
+  return prisma.simulationSession.findUnique({
     where: { id },
     include: {
       sessionChapters: {
@@ -46,7 +46,7 @@ export const getSessionService = async (id: string) => {
 };
 
 export const getUserSessionsService = async (userId: string) => {
-  return prisma.session.findMany({
+  return prisma.simulationSession.findMany({
     where: { userId },
     include: {
       document: true,
@@ -59,7 +59,7 @@ export const getUserSessionsService = async (userId: string) => {
 };
 
 export const completeSessionService = async (id: string) => {
-  return prisma.session.update({
+  return prisma.simulationSession.update({
     where: { id },
     data: {
       isCompleted: true,

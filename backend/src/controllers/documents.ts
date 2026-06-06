@@ -37,8 +37,8 @@ export const uploadDocuments = async (c: Context) => {
       );
     }
 
-    const userId = "1";
-
+    const user = c.get("user");
+    const userId = user.id;
     const document = await uploadDocumentService({ file, title, userId });
 
     return c.json({ success: true, data: document }, 201);
@@ -105,7 +105,8 @@ export const getDocumentStatus = async (c: Context) => {
 
 export const getUserDocuments = async (c: Context) => {
   try {
-    const userId = "1";
+    const user = c.get("user");
+    const userId = user.id;
     const documents = await getUserDocumentsService(userId);
 
     return c.json({ success: true, data: documents });

@@ -259,21 +259,21 @@ Error `code` is a constant string used by the frontend for programmatic error ha
 
 ## Tech Stack
 
-| Layer             | Teknologi                                       |
-| ----------------- | ----------------------------------------------- |
-| Frontend          | Next.js + Tailwind + Shadcn UI                  |
-| Backend API       | Hono + Prisma + Bun                             |
-| AI/RAG Service    | FastAPI + OpenAI SDK + Anthropic SDK + pgvector |
-| Embedding Model   | `text-embedding-3-small` (OpenAI, dimensi 1536) |
-| LLM               | `claude-haiku-4-5` (Anthropic)                  |
-| Database          | Supabase (PostgreSQL + pgvector)                |
-| Auth              | Better Auth + Google OAuth plugin               |
-| Storage PDF       | Supabase Storage                                |
-| Frontend Deploy   | Vercel                                          |
-| Backend Deploy    | Railway atau Render                             |
-| AI Service Deploy | Railway atau Render                             |
+| Layer             | Teknologi                                                      |
+| ----------------- | -------------------------------------------------------------- |
+| Frontend          | Next.js + Tailwind + Shadcn UI                                 |
+| Backend API       | Hono + Prisma + Bun                                            |
+| AI/RAG Service    | FastAPI + Groq SDK + sentence-transformers + pgvector          |
+| Embedding Model   | `all-MiniLM-L6-v2` (sentence-transformers, lokal, dimensi 384) |
+| LLM               | `llama-3.1-8b-instant` (Groq)                                  |
+| Database          | Supabase (PostgreSQL + pgvector)                               |
+| Auth              | Better Auth + Google OAuth plugin                              |
+| Storage PDF       | Supabase Storage                                               |
+| Frontend Deploy   | Vercel                                                         |
+| Backend Deploy    | Railway atau Render                                            |
+| AI Service Deploy | Railway atau Render                                            |
 
-RAG service menggunakan dua SDK sekaligus: OpenAI SDK khusus untuk embedding, Anthropic SDK khusus untuk LLM. Frontend tidak pernah memanggil kedua SDK ini secara langsung.
+RAG service menggunakan Groq SDK untuk LLM dan `sentence-transformers` untuk embedding yang berjalan secara lokal tanpa API key eksternal. Frontend tidak pernah memanggil service AI ini secara langsung.
 
 ---
 
