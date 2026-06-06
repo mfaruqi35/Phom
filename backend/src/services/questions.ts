@@ -34,7 +34,7 @@ export const generateQuestionsService = async ({
     })),
   });
 
-  await prisma.session.update({
+  await prisma.simulationSession.update({
     where: { id: sessionId },
     data: { totalQuestions: questions.length },
   });

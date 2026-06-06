@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export const getEvaluationService = async (sessionId: string) => {
-  const session = await prisma.session.findUnique({
+  const session = await prisma.simulationSession.findUnique({
     where: { id: sessionId },
     include: { document: true },
   });

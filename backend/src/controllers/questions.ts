@@ -48,6 +48,18 @@ export const generateQuestions = async (c: Context) => {
 export const getQuestionsBySession = async (c: Context) => {
   try {
     const sessionId = c.req.param("sessionId");
+    if (!sessionId) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "MISSING_PARAM",
+            message: "Session Id is required.",
+          },
+        },
+        400,
+      );
+    }
     const questions = await getQuestionsBySessionService(sessionId);
     return c.json({ success: true, data: questions });
   } catch (error) {

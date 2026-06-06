@@ -36,8 +36,8 @@ export const createSession = async (c: Context) => {
       );
     }
 
-    const userId = "1";
-
+    const user = c.get("user");
+    const userId = user.id;
     const session = await createSessionService({
       userId,
       documentId: body.documentId,
@@ -109,8 +109,8 @@ export const getSession = async (c: Context) => {
 
 export const getUserSessions = async (c: Context) => {
   try {
-    // TODO: get user id from session
-    const userId = "1";
+    const user = c.get("user");
+    const userId = user.id;
     const sessions = await getUserSessionsService(userId);
     return c.json({ success: true, data: sessions });
   } catch (error) {
