@@ -194,9 +194,30 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
           
           {/* Social icons */}
           <div className="flex justify-center gap-3">
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">f</button>
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">G</button>
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">in</button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              </svg>
+            </button>
           </div>
 
           <p className="text-[10px] text-gray-400">or use your account</p>
@@ -286,9 +307,30 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
 
           {/* Social icons */}
           <div className="flex justify-center gap-3">
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">f</button>
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">G</button>
-            <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">in</button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              </svg>
+            </button>
           </div>
 
           <p className="text-[10px] text-gray-400">or use your email for registration</p>
@@ -487,13 +529,13 @@ export default function Home() {
         >
           <div className="flex justify-between items-center w-full">
             {/* Brand Logo */}
-            <a href="#" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white group-hover:scale-105 transition-transform duration-300 shadow-md shadow-primary/20">
-                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+            <a href="/" className="flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform duration-300 shadow-md shadow-indigo-600/20">
+                <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
                   neurology
                 </span>
               </div>
-              <span className="text-xl font-heading font-extrabold text-primary tracking-tight">
+              <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
                 Phom
               </span>
             </a>
@@ -511,26 +553,28 @@ export default function Home() {
                     keyboard_arrow_down
                   </span>
                 </a>
-                {/* Floating Dropdown */}
-                <div className="absolute top-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 w-48 bg-white border border-gray-100 shadow-xl rounded-2xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 p-2 z-50">
-                  <a
-                    href="#about"
-                    className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-primary rounded-xl transition-all"
-                  >
-                    Tentang Phom
-                  </a>
-                  <a
-                    href="#features"
-                    className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-primary rounded-xl transition-all"
-                  >
-                    Simulasi AI Sidang
-                  </a>
-                  <a
-                    href="#solutions"
-                    className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-primary rounded-xl transition-all"
-                  >
-                    Evaluasi Metodologi
-                  </a>
+                {/* Floating Dropdown Container with hover bridge */}
+                <div className="absolute top-full pt-2 left-1/2 -translate-x-1/2 w-48 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 z-50">
+                  <div className="bg-white border border-gray-100 shadow-xl rounded-2xl p-2">
+                    <a
+                      href="#about"
+                      className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+                    >
+                      Tentang Phom
+                    </a>
+                    <a
+                      href="#features"
+                      className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+                    >
+                      Simulasi AI Sidang
+                    </a>
+                    <a
+                      href="#solutions"
+                      className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+                    >
+                      Evaluasi Metodologi
+                    </a>
+                  </div>
                 </div>
               </div>
 
@@ -1417,13 +1461,13 @@ export default function Home() {
         <footer className="bg-slate-900 w-full border-t border-white/5 py-16 text-slate-300">
           <div className="max-w-[1280px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between gap-12 md:gap-8">
             <div className="flex flex-col gap-4 max-w-xs">
-              <a href="#" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded bg-white flex items-center justify-center text-primary shadow-sm">
-                  <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <a href="/" className="flex items-center gap-2 group">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform duration-300 shadow-md shadow-indigo-600/20">
+                  <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
                     neurology
                   </span>
                 </div>
-                <span className="text-xl font-heading font-bold text-white">Phom</span>
+                <span className="text-xl font-heading font-bold text-white tracking-tight">Phom</span>
               </a>
               <p className="font-body text-xs text-slate-400 leading-relaxed mt-2">
                 Platform SaaS simulator sidang skripsi terbaik untuk membantu melatih mental dan argumentasi akademis mahasiswa tingkat akhir.

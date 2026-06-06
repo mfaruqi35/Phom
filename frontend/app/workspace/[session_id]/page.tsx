@@ -132,74 +132,91 @@ export default function WorkspacePage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
       {/* Top Workspace Header */}
-      <header className="w-full bg-white/80 backdrop-blur-md border-b border-[#C7C4D8]/40 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm animate-header">
-        <div className="flex items-center gap-3">
-          <a
-            href="/dashboard"
-            className="flex items-center gap-1.5 text-gray-400 hover:text-[#3525cd] transition-colors text-xs font-bold font-heading"
-          >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Dashboard
-          </a>
-          <span className="text-gray-200">|</span>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#3525cd] animate-pulse"></span>
-            <span className="text-xs font-extrabold text-[#3525cd]">
-              Simulasi Aktif: Bab III & IV
-            </span>
-          </div>
-        </div>
-
-        {/* Brand center/right */}
-        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-          <div className="hidden md:flex items-center gap-2 text-[10px] text-[#3525cd] bg-indigo-50/50 px-3.5 py-1.5 rounded-full border border-indigo-100/50 font-bold uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Connected to Examiner AI
-          </div>
-
-          {/* User profile dropdown button */}
-          <button 
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-              AS
-            </div>
-            <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-              Dr. Aris Setiawan
-            </span>
-            <span className="material-symbols-outlined text-base text-gray-400">
-              keyboard_arrow_down
-            </span>
-          </button>
-
-          {/* Profile Dropdown Menu */}
-          {profileDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
-              <div className="px-3 py-2 border-b border-gray-50 mb-1">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
-                <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
+        <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="flex items-center gap-5">
+            <a href="/dashboard" className="flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
+                <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  neurology
+                </span>
               </div>
-              <a 
-                href="/history" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+              <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
+                Phom
+              </span>
+            </a>
+            
+            <span className="text-gray-200 hidden sm:inline">|</span>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="/dashboard"
+                className="flex items-center gap-1.5 text-gray-400 hover:text-[#3525cd] transition-colors text-xs font-bold font-heading"
               >
-                <span className="material-symbols-outlined text-base">history</span>
-                Riwayat Sesi
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                Dashboard
               </a>
-              <a 
-                href="/" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
-              >
-                <span className="material-symbols-outlined text-base">logout</span>
-                Keluar
-              </a>
+              <span className="text-gray-200">|</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#3525cd] animate-pulse"></span>
+                <span className="text-xs font-extrabold text-[#3525cd]">
+                  Simulasi Aktif: Bab III & IV
+                </span>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Brand center/right */}
+          <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+            <div className="hidden md:flex items-center gap-2 text-[10px] text-[#3525cd] bg-indigo-50/50 px-3.5 py-1.5 rounded-full border border-indigo-100/50 font-bold uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Connected to Examiner AI
+            </div>
+
+            {/* User profile dropdown button */}
+            <button 
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
+                AS
+              </div>
+              <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
+                Dr. Aris Setiawan
+              </span>
+              <span className="material-symbols-outlined text-base text-gray-400">
+                keyboard_arrow_down
+              </span>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2.5 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
+                <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
+                  <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+                </div>
+                <a 
+                  href="/history" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">history</span>
+                  Riwayat Sesi
+                </a>
+                <a 
+                  href="/" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">logout</span>
+                  Keluar
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6 overflow-hidden h-[calc(100vh-68px)] z-10">
+      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6 overflow-hidden h-[calc(100vh-100px)] z-10">
         
         {/* Sidebar Panel */}
         <aside className="w-full md:w-68 flex-shrink-0 flex flex-col gap-6 bg-white border border-[#C7C4D8]/50 rounded-2xl p-6 shadow-sm justify-between md:h-full animate-card-1">

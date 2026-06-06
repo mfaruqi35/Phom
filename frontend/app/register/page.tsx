@@ -23,7 +23,6 @@ function RegisterContent() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
   const [signUpRole, setSignUpRole] = useState<UserRole>("mahasiswa");
-  const [signUpIdentifier, setSignUpIdentifier] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -76,8 +75,6 @@ function RegisterContent() {
       return;
     }
 
-    // No NIM/NIP validation required for single-user role setup
-
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -99,7 +96,7 @@ function RegisterContent() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-between bg-[#F9FAFB] p-6 font-['Poppins',sans-serif] relative overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col items-center justify-between bg-[#F8F9FF] p-6 font-['Poppins',sans-serif] relative overflow-hidden">
       
       {/* 1. BACKGROUND DECORATIONS (Floating Orbs & Grid) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
@@ -120,7 +117,7 @@ function RegisterContent() {
           background-color: #fff;
           border-radius: 24px;
           box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.08), 0 0 40px rgba(0, 0, 0, 0.01);
-          border: 1px solid rgba(0,0,0,0.04);
+          border: 1px solid rgba(199, 196, 216, 0.4);
           transition: all 0.5s ease;
         }
         .auth-card:hover {
@@ -173,7 +170,7 @@ function RegisterContent() {
         .overlay-tint {
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(79, 70, 229, 0.88), rgba(59, 130, 246, 0.88));
+          background: linear-gradient(135deg, rgba(53, 37, 205, 0.88), rgba(111, 61, 217, 0.88));
           z-index: 1;
         }
         .overlay-panel {
@@ -203,9 +200,9 @@ function RegisterContent() {
       <div className="w-full max-w-5xl flex justify-start items-center z-10 py-2">
         <a 
           href="/" 
-          className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-primary transition-colors bg-white/80 backdrop-blur px-3 py-1.5 rounded-full border border-gray-200/60 shadow-sm"
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#3525cd] transition-all bg-white/80 backdrop-blur px-4 py-2 rounded-xl border border-[#C7C4D8]/50 shadow-sm active:scale-[0.98]"
         >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>
+          <span className="material-symbols-outlined text-sm font-bold">arrow_back</span>
           <span>Kembali ke Beranda</span>
         </a>
       </div>
@@ -223,9 +220,30 @@ function RegisterContent() {
             
             {/* Social icons */}
             <div className="flex justify-center gap-3">
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">f</button>
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">G</button>
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">in</button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </button>
             </div>
 
             <p className="text-[10px] text-gray-400">or use your account</p>
@@ -247,7 +265,7 @@ function RegisterContent() {
                   value={signInEmail}
                   onChange={(e) => setSignInEmail(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
               
@@ -259,7 +277,7 @@ function RegisterContent() {
                   value={signInPassword}
                   onChange={(e) => setSignInPassword(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
             </div>
@@ -271,18 +289,18 @@ function RegisterContent() {
                   type="checkbox"
                   checked={signInRemember}
                   onChange={(e) => setSignInRemember(e.target.checked)}
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20 accent-primary"
+                  className="w-4 h-4 text-[#3525cd] border-gray-300 rounded focus:ring-[#3525cd]/20 accent-[#3525cd]"
                 />
                 <span>Remember me</span>
               </label>
-              <a href="#" className="hover:underline hover:text-primary transition-colors">Forgot password?</a>
+              <a href="#" className="hover:underline hover:text-[#3525cd] transition-colors">Forgot password?</a>
             </div>
 
             {/* Submit button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
+              className="w-full h-11 rounded-xl bg-[#3525cd] hover:bg-[#281baf] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
             >
               {isLoading ? "Signing In..." : "SIGN IN"}
             </button>
@@ -297,7 +315,7 @@ function RegisterContent() {
               type="button"
               onClick={handleDemoBypass}
               disabled={isLoading}
-              className="w-full h-11 rounded-xl border border-indigo-200 hover:border-primary bg-indigo-50/20 hover:bg-indigo-50/50 text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              className="w-full h-11 rounded-xl border border-indigo-200 hover:border-[#3525cd] bg-indigo-50/20 hover:bg-indigo-50/50 text-[#3525cd] text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-sm font-bold">bolt</span>
               Coba Demo Instan (Tanpa Daftar)
@@ -315,9 +333,30 @@ function RegisterContent() {
 
             {/* Social icons */}
             <div className="flex justify-center gap-3">
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">f</button>
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">G</button>
-              <button type="button" className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">in</button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </button>
             </div>
 
             <p className="text-[10px] text-gray-400">or use your email for registration</p>
@@ -344,7 +383,7 @@ function RegisterContent() {
                   value={signUpName}
                   onChange={(e) => setSignUpName(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
 
@@ -356,7 +395,7 @@ function RegisterContent() {
                   value={signUpEmail}
                   onChange={(e) => setSignUpEmail(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
 
@@ -368,7 +407,7 @@ function RegisterContent() {
                   value={signUpPassword}
                   onChange={(e) => setSignUpPassword(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
 
@@ -380,18 +419,16 @@ function RegisterContent() {
                   value={signUpConfirmPassword}
                   onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                   required
-                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#3525cd] focus:bg-white transition-all focus:ring-4 focus:ring-[#3525cd]/10"
                 />
               </div>
-
-              {/* Role defaulted to User, no selection inputs needed */}
             </div>
 
             {/* Submit button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-3"
+              className="w-full h-11 rounded-xl bg-[#3525cd] hover:bg-[#281baf] text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-3"
             >
               {isLoading ? "Creating Account..." : "SIGN UP"}
             </button>
@@ -406,7 +443,7 @@ function RegisterContent() {
               type="button"
               onClick={handleDemoBypass}
               disabled={isLoading}
-              className="w-full h-11 rounded-xl border border-indigo-200 hover:border-primary bg-indigo-50/20 hover:bg-indigo-50/50 text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              className="w-full h-11 rounded-xl border border-indigo-200 hover:border-[#3525cd] bg-indigo-50/20 hover:bg-indigo-50/50 text-[#3525cd] text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-sm font-bold">bolt</span>
               Coba Demo Instan (Tanpa Daftar)
@@ -429,7 +466,7 @@ function RegisterContent() {
               </p>
               <button
                 onClick={() => setIsSignUp(false)}
-                className="w-32 h-10 rounded-full border-2 border-white bg-transparent hover:bg-white text-white hover:text-primary text-xs font-bold transition-all duration-300"
+                className="w-32 h-10 rounded-full border-2 border-white bg-transparent hover:bg-white text-white hover:text-[#3525cd] text-xs font-bold transition-all duration-300"
               >
                 SIGN IN
               </button>
@@ -443,7 +480,7 @@ function RegisterContent() {
               </p>
               <button
                 onClick={() => setIsSignUp(true)}
-                className="w-32 h-10 rounded-full border-2 border-white bg-transparent hover:bg-white text-white hover:text-primary text-xs font-bold transition-all duration-300"
+                className="w-32 h-10 rounded-full border-2 border-white bg-transparent hover:bg-white text-white hover:text-[#3525cd] text-xs font-bold transition-all duration-300"
               >
                 SIGN UP
               </button>
@@ -455,7 +492,7 @@ function RegisterContent() {
       </div>
 
       {/* 4. FOOTER: Copyright notice */}
-      <div className="w-full max-w-5xl text-center z-10 py-4 border-t border-gray-200/40">
+      <div className="w-full max-w-5xl text-center z-10 py-4 border-t border-[#C7C4D8]/30">
         <p className="text-[10px] text-gray-400 font-medium tracking-wide">
           Phom © 2026 — AI-Powered Thesis Defense Simulator. Designed for Academic Excellence.
         </p>
@@ -467,7 +504,7 @@ function RegisterContent() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] text-sm text-gray-500 font-semibold">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] text-sm text-gray-500 font-semibold">Loading...</div>}>
       <RegisterContent />
     </Suspense>
   );

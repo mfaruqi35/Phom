@@ -218,78 +218,129 @@ export default function DashboardPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
       {/* Header */}
-      <header className="w-full bg-white/80 backdrop-blur-md border-b border-[#C7C4D8]/40 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm animate-header">
-        <a href="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
-            <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
-              neurology
-            </span>
-          </div>
-          <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
-            Phom
-          </span>
-        </a>
-
-        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-          {/* Active status pill */}
-          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-100 bg-indigo-50/50 text-[#3525cd] font-heading text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Workspace Aktif
-          </div>
-          
-          {/* User profile dropdown button */}
-          <button 
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-              AS
+      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
+        <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <a href="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
+              <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
+                neurology
+              </span>
             </div>
-            <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-              Dr. Aris Setiawan
+            <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
+              Phom
             </span>
-            <span className="material-symbols-outlined text-base text-gray-400">
-              keyboard_arrow_down
-            </span>
-          </button>
+          </a>
 
-          {/* Profile Dropdown Menu */}
-          {profileDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
-              <div className="px-3 py-2 border-b border-gray-50 mb-1">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
-                <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+          <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+            {/* Active status pill */}
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-100 bg-indigo-50/50 text-[#3525cd] font-heading text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Workspace Aktif
+            </div>
+            
+            {/* User profile dropdown button */}
+            <button 
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
+                AS
               </div>
-              <a 
-                href="/history" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
-              >
-                <span className="material-symbols-outlined text-base">history</span>
-                Riwayat Sesi
-              </a>
-              <a 
-                href="/" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
-              >
-                <span className="material-symbols-outlined text-base">logout</span>
-                Keluar
-              </a>
-            </div>
-          )}
+              <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
+                Dr. Aris Setiawan
+              </span>
+              <span className="material-symbols-outlined text-base text-gray-400">
+                keyboard_arrow_down
+              </span>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2.5 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
+                <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
+                  <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+                </div>
+                <a 
+                  href="/history" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">history</span>
+                  Riwayat Sesi
+                </a>
+                <a 
+                  href="/" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">logout</span>
+                  Keluar
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-10 flex flex-col gap-10 z-10">
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-10 flex flex-col gap-8 z-10">
         
         {/* Header Intro */}
         <div className="text-center max-w-2xl mx-auto animate-title">
-          <h1 className="text-4xl font-heading font-extrabold text-[#0B1C30] tracking-tight mb-3">
+          <h1 className="text-4xl font-heading font-extrabold text-[#0B1C30] tracking-tight mb-2">
             Dashboard Simulator
           </h1>
           <p className="text-sm text-gray-500 leading-relaxed">
             Unggah naskah skripsi PDF Anda, verifikasi cakupan bab, dan pilih intensitas simulasi ujian untuk memulai pertahanan akademik Anda.
           </p>
+        </div>
+
+        {/* Statistics Grid Widgets */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto w-full animate-title">
+          
+          {/* Stat 1 */}
+          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-[#3525cd] flex-shrink-0">
+              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
+            </div>
+            <div>
+              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Total Simulasi</p>
+              <p className="text-xs font-extrabold text-[#0B1C30]">12 Sesi Selesai</p>
+            </div>
+          </div>
+
+          {/* Stat 2 */}
+          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 flex-shrink-0">
+              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
+            </div>
+            <div>
+              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Rata-rata Skor</p>
+              <p className="text-xs font-extrabold text-[#0B1C30]">78.4 / 100</p>
+            </div>
+          </div>
+
+          {/* Stat 3 */}
+          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 flex-shrink-0">
+              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+            </div>
+            <div>
+              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Waktu Latihan</p>
+              <p className="text-xs font-extrabold text-[#0B1C30]">4.5 Jam</p>
+            </div>
+          </div>
+
+          {/* Stat 4 */}
+          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0">
+              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            </div>
+            <div>
+              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Kategori Layak</p>
+              <p className="text-xs font-extrabold text-emerald-600">Sangat Layak (B+)</p>
+            </div>
+          </div>
+
         </div>
 
         {/* 1. Centered Processing Status Zone / Dropzone */}
@@ -517,75 +568,154 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* Right Column: Session Intensity */}
-          <section className="lg:col-span-5 bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-3 flex flex-col gap-6">
-            <div>
-              <h2 className="text-lg font-heading font-extrabold text-[#0B1C30]">
-                Session Intensity
-              </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Pilih beban mental & frekuensi pertanyaan ujian.
-              </p>
-            </div>
+          {/* Right Column: Session Intensity & Recent Sessions */}
+          <div className="lg:col-span-5 space-y-6 flex flex-col">
+            
+            <section className="w-full bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-3 flex flex-col gap-6">
+              <div>
+                <h2 className="text-lg font-heading font-extrabold text-[#0B1C30]">
+                  Session Intensity
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Pilih beban mental & frekuensi pertanyaan ujian.
+                </p>
+              </div>
 
-            {/* Intensity List */}
-            <div className="flex flex-col gap-4">
-              {SIMULATION_MODES.map((mode) => {
-                const isSelected = simulationMode === mode.id;
-                
-                return (
-                  <button
-                    key={mode.id}
-                    onClick={() => setSimulationMode(mode.id)}
-                    className={`relative p-4.5 rounded-xl border text-left transition-all duration-300 flex items-start gap-4 ${
-                      isSelected
-                        ? "border-[#3525cd] bg-[#3525cd]/[0.02] shadow-sm scale-[1.01]"
-                        : "border-[#C7C4D8]/50 bg-white hover:border-[#3525cd]/30"
-                    }`}
-                  >
-                    {/* Glowing highlight indicator */}
-                    {isSelected && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-[#3525cd]" />
-                    )}
-
-                    {/* Icon Bubble with custom mode color */}
-                    <div
-                      className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
+              {/* Intensity List */}
+              <div className="flex flex-col gap-4">
+                {SIMULATION_MODES.map((mode) => {
+                  const isSelected = simulationMode === mode.id;
+                  
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => setSimulationMode(mode.id)}
+                      className={`relative p-4.5 rounded-xl border text-left transition-all duration-300 flex items-start gap-4 ${
                         isSelected
-                          ? "bg-indigo-50 border-indigo-100 text-[#3525cd]"
-                          : "bg-gray-50 border-gray-100 text-gray-400"
+                          ? "border-[#3525cd] bg-[#3525cd]/[0.02] shadow-sm scale-[1.01]"
+                          : "border-[#C7C4D8]/50 bg-white hover:border-[#3525cd]/30"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-lg font-bold">
-                        {mode.icon}
-                      </span>
-                    </div>
+                      {/* Glowing highlight indicator */}
+                      {isSelected && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-[#3525cd]" />
+                      )}
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0 pr-6">
-                      <h3
-                        className={`text-xs font-bold leading-none ${
-                          isSelected ? "text-[#3525cd]" : "text-[#0B1C30]"
+                      {/* Icon Bubble with custom mode color */}
+                      <div
+                        className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
+                          isSelected
+                            ? "bg-indigo-50 border-indigo-100 text-[#3525cd]"
+                            : "bg-gray-50 border-gray-100 text-gray-400"
                         }`}
                       >
-                        {mode.title}
-                      </h3>
-                      <p className="text-[10px] text-gray-400 mt-1.5 leading-normal">
-                        {mode.description}
-                      </p>
-                    </div>
+                        <span className="material-symbols-outlined text-lg font-bold">
+                          {mode.icon}
+                        </span>
+                      </div>
 
-                    {/* Checkmark bubble */}
-                    {isSelected && (
-                      <span className="material-symbols-outlined text-[#3525cd] text-base font-bold absolute top-4 right-4 animate-scaleUp">
-                        check_circle
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+                      {/* Info */}
+                      <div className="flex-1 min-w-0 pr-6">
+                        <h3
+                          className={`text-xs font-bold leading-none ${
+                            isSelected ? "text-[#3525cd]" : "text-[#0B1C30]"
+                          }`}
+                        >
+                          {mode.title}
+                        </h3>
+                        <p className="text-[10px] text-gray-400 mt-1.5 leading-normal">
+                          {mode.description}
+                        </p>
+                      </div>
+
+                      {/* Checkmark bubble */}
+                      {isSelected && (
+                        <span className="material-symbols-outlined text-[#3525cd] text-base font-bold absolute top-4 right-4 animate-scaleUp">
+                          check_circle
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Recent Sessions Widget */}
+            <div className="bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm flex flex-col gap-4 animate-card-3">
+              <div>
+                <h2 className="text-sm font-heading font-extrabold text-[#0B1C30] uppercase tracking-wider">
+                  Riwayat Simulasi Terakhir
+                </h2>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  Akses cepat laporan evaluasi dari latihan sebelumnya.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {/* Session Item 1 */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-[#F8F9FF]/20 hover:bg-[#F8F9FF]/50 transition-all">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="material-symbols-outlined text-lg text-indigo-500 flex-shrink-0">
+                      description
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]">
+                        Full_Thesis_Final_Draft.pdf
+                      </p>
+                      <p className="text-[9px] text-gray-400">06 Juni 2026 • 8 Pertanyaan</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      Skor: 78
+                    </span>
+                    <a 
+                      href="/evaluation/mock-session" 
+                      className="p-1 text-gray-400 hover:text-[#3525cd] transition-colors"
+                      title="Lihat Laporan"
+                    >
+                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Session Item 2 */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-[#F8F9FF]/20 hover:bg-[#F8F9FF]/50 transition-all">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="material-symbols-outlined text-lg text-indigo-500 flex-shrink-0">
+                      description
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]">
+                        Skripsi_Revisi_v1.pdf
+                      </p>
+                      <p className="text-[9px] text-gray-400">04 Juni 2026 • 5 Pertanyaan</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] font-extrabold text-[#3525cd] bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                      Skor: 64
+                    </span>
+                    <a 
+                      href="/evaluation/mock-session" 
+                      className="p-1 text-gray-400 hover:text-[#3525cd] transition-colors"
+                      title="Lihat Laporan"
+                    >
+                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <a 
+                href="/history" 
+                className="text-center text-[10px] font-extrabold text-[#3525cd] hover:underline uppercase tracking-wider block mt-1"
+              >
+                Lihat Semua Riwayat Sesi
+              </a>
             </div>
-          </section>
+
+          </div>
 
         </div>
 

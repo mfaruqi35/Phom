@@ -105,65 +105,67 @@ export default function HistoryPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
       {/* Header */}
-      <header className="w-full bg-white/80 backdrop-blur-md border-b border-[#C7C4D8]/40 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm animate-header">
-        <a href="/dashboard" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
-            <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
-              neurology
+      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
+        <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <a href="/dashboard" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
+              <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
+                neurology
+              </span>
+            </div>
+            <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
+              Phom
             </span>
-          </div>
-          <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
-            Phom
-          </span>
-        </a>
-
-        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-          <a
-            href="/dashboard"
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#C7C4D8]/60 text-gray-700 text-xs font-bold hover:bg-indigo-50/20 hover:text-[#3525cd] hover:border-indigo-100 transition-all shadow-sm active:scale-[0.98]"
-          >
-            Dashboard
           </a>
 
-          {/* User profile dropdown button */}
-          <button 
-            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
-          >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-              AS
-            </div>
-            <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-              Dr. Aris Setiawan
-            </span>
-            <span className="material-symbols-outlined text-base text-gray-400">
-              keyboard_arrow_down
-            </span>
-          </button>
+          <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+            <a
+              href="/dashboard"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#C7C4D8]/60 text-gray-700 text-xs font-bold hover:bg-indigo-50/20 hover:text-[#3525cd] hover:border-indigo-100 transition-all shadow-sm active:scale-[0.98]"
+            >
+              Dashboard
+            </a>
 
-          {/* Profile Dropdown Menu */}
-          {profileDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
-              <div className="px-3 py-2 border-b border-gray-50 mb-1">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
-                <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+            {/* User profile dropdown button */}
+            <button 
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
+                AS
               </div>
-              <a 
-                href="/history" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-[#3525cd] bg-indigo-50/30 rounded-xl transition-all"
-              >
-                <span className="material-symbols-outlined text-base">history</span>
-                Riwayat Sesi
-              </a>
-              <a 
-                href="/" 
-                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
-              >
-                <span className="material-symbols-outlined text-base">logout</span>
-                Keluar
-              </a>
-            </div>
-          )}
+              <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
+                Dr. Aris Setiawan
+              </span>
+              <span className="material-symbols-outlined text-base text-gray-400">
+                keyboard_arrow_down
+              </span>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2.5 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
+                <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
+                  <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+                </div>
+                <a 
+                  href="/history" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-[#3525cd] bg-indigo-50/30 rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">history</span>
+                  Riwayat Sesi
+                </a>
+                <a 
+                  href="/" 
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">logout</span>
+                  Keluar
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
