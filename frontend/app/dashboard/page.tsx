@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
 type SimulationMode = "quick" | "standard" | "deep";
 
 interface Chapter {
@@ -15,105 +15,172 @@ interface Chapter {
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
-
 const INITIAL_CHAPTERS: Chapter[] = [
   { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
-  {
-    id: "2",
-    label: "II",
-    title: "Tinjauan Pustaka",
-    pageStart: "11",
-    pageEnd: "25",
-  },
-  {
-    id: "3",
-    label: "III",
-    title: "Metodologi",
-    pageStart: "26",
-    pageEnd: "45",
-  },
-  {
-    id: "4",
-    label: "IV",
-    title: "Hasil & Pembahasan",
-    pageStart: "",
-    pageEnd: "",
-  },
-  { id: "5", label: "V", title: "Penutup", pageStart: "", pageEnd: "" },
+  { id: "2", label: "II", title: "Tinjauan Pustaka", pageStart: "11", pageEnd: "25" },
+  { id: "3", label: "III", title: "Metodologi", pageStart: "26", pageEnd: "45" },
+  { id: "4", label: "IV", title: "Hasil & Pembahasan", pageStart: "", pageEnd: "" },
+  { id: "5", label: "V", title: "Penutupan", pageStart: "", pageEnd: "" },
 ];
 
 const SIMULATION_MODES = [
   {
     id: "quick" as SimulationMode,
-    icon: "⚡",
+    icon: "bolt",
     title: "Quick Review",
-    description: "Rapid 15-minute fire-round.",
+    description: "Rapid 15-minute fire-round (3-5 questions).",
+    color: "from-amber-500 to-orange-500",
   },
   {
     id: "standard" as SimulationMode,
-    icon: "🎓",
+    icon: "school",
     title: "Standard Exam",
-    description: "Full 45-minute simulation.",
+    description: "Full 45-minute simulation (8-10 questions).",
+    color: "from-indigo-500 to-blue-600",
   },
   {
     id: "deep" as SimulationMode,
-    icon: "🔬",
+    icon: "science",
     title: "Deep Drill",
-    description: "Intensive methodology scrutiny.",
+    description: "Intensive methodology scrutiny (12-15 questions).",
+    color: "from-purple-600 to-pink-600",
   },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function DashboardHeader() {
-  return (
-    <header className="w-full bg-white border-b border-[#E5E7EB] px-6 py-3 flex items-center justify-between">
-      {/* Logo */}
-      <div className="flex flex-col leading-none">
-        <span
-          className="text-[#4F46E5] font-bold text-base tracking-tight"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
-          Logo Phom
-        </span>
-      </div>
-
-      {/* Right side */}
-      <div className="flex items-center gap-4">
-        {/* Avatar + name */}
-        <button
-          id="dashboard-avatar-btn"
-          className="flex items-center gap-2.5 rounded-full pl-1 pr-3 py-1 hover:bg-[#F3F4F6] transition-colors"
-        >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white text-sm font-semibold">
-            As
-          </div>
-          <span className="text-sm font-medium text-[#111827]">Nama User</span>
-        </button>
-      </div>
-    </header>
-  );
-}
-
-function FileUploadZone({
-  uploadedFile,
-  onFileSelect,
-  onFileRemove,
-}: {
-  uploadedFile: File | null;
-  onFileSelect: (file: File) => void;
-  onFileRemove: () => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
+export default function DashboardPage() {
+  const router = useRouter();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
+  const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>(["1", "2", "3"]);
+  const [simulationMode, setSimulationMode] = useState<SimulationMode>("standard");
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Ingestion In-Progress State
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingPhase, setProcessingPhase] = useState("Menunggu unggahan...");
+
+  // Profile Dropdown state
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Set initial file on client load for demo purposes if desired
+  useEffect(() => {
+    const mockFile = new File(["dummy content"], "Full_Thesis_Final_Draft.pdf", {
+      type: "application/pdf",
+    });
+    Object.defineProperty(mockFile, "size", { value: 14.2 * 1024 * 1024 });
+    setUploadedFile(mockFile);
+  }, []);
+
+  // Ingestion Simulation Trigger
+  useEffect(() => {
+    if (uploadedFile) {
+      setIsProcessing(true);
+      setProcessingProgress(0);
+      setProcessingPhase("Membaca struktur PDF...");
+      
+      const interval = setInterval(() => {
+        setProcessingProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setIsProcessing(false);
+            setProcessingPhase("Analisis bab selesai!");
+            return 100;
+          }
+          const next = prev + Math.floor(Math.random() * 12) + 6;
+          const currentProgress = Math.min(next, 100);
+          
+          if (currentProgress < 25) {
+            setProcessingPhase("Membaca struktur PDF...");
+          } else if (currentProgress < 55) {
+            setProcessingPhase("Mengekstrak teks & bab...");
+          } else if (currentProgress < 85) {
+            setProcessingPhase("Memetakan tabel & referensi...");
+          } else {
+            setProcessingPhase("Dokumen siap dianalisis!");
+          }
+          return currentProgress;
+        });
+      }, 250);
+
+      return () => clearInterval(interval);
+    } else {
+      setIsProcessing(false);
+      setProcessingProgress(0);
+      setProcessingPhase("Menunggu unggahan...");
+    }
+  }, [uploadedFile]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && file.type === "application/pdf") {
-      onFileSelect(file);
+      setUploadedFile(file);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setUploadedFile(file);
+  };
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleChapterTitleChange = (id: string, newTitle: string) => {
+    setChapters(
+      chapters.map((ch) => (ch.id === id ? { ...ch, title: newTitle } : ch))
+    );
+  };
+
+  const handlePageChange = (id: string, field: "pageStart" | "pageEnd", value: string) => {
+    setChapters(
+      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch))
+    );
+  };
+
+  const handleDeleteChapter = (id: string) => {
+    setChapters(chapters.filter((ch) => ch.id !== id));
+    setSelectedChapterIds(selectedChapterIds.filter((x) => x !== id));
+  };
+
+  const handleAddChapter = () => {
+    const nextNum = chapters.length + 1;
+    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+    const romanLabel = romanNumerals[nextNum - 1] || String(nextNum);
+    const newId = String(Date.now());
+    
+    const newChapter: Chapter = {
+      id: newId,
+      label: romanLabel,
+      title: "Bab Baru",
+      pageStart: "",
+      pageEnd: "",
+    };
+    setChapters([...chapters, newChapter]);
+    setSelectedChapterIds([...selectedChapterIds, newId]);
+  };
+
+  const toggleChapter = (id: string) => {
+    setSelectedChapterIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   };
 
   const formatSize = (bytes: number) => {
@@ -121,447 +188,490 @@ function FileUploadZone({
     return `${mb.toFixed(1)} MB`;
   };
 
-  return (
-    <div
-      id="dashboard-upload-zone"
-      onDrop={handleDrop}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      className={`relative w-full rounded-2xl border-2 border-dashed transition-all duration-200 ${
-        isDragging
-          ? "border-[#4F46E5] bg-[#EEF2FF]"
-          : "border-[#D1D5DB] bg-white"
-      }`}
-    >
-      <input
-        ref={inputRef}
-        id="dashboard-file-input"
-        type="file"
-        accept=".pdf"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onFileSelect(file);
-        }}
-      />
-
-      <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-        {uploadedFile ? (
-          <>
-            {/* Remove button */}
-            <button
-              id="dashboard-remove-file-btn"
-              onClick={onFileRemove}
-              className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
-              title="Remove file"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-              </svg>
-            </button>
-
-            {/* PDF icon */}
-            <div className="w-14 h-14 rounded-xl bg-[#EEF2FF] flex items-center justify-center mb-4">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <rect
-                  x="4"
-                  y="2"
-                  width="16"
-                  height="20"
-                  rx="2"
-                  fill="#4F46E5"
-                  fillOpacity="0.15"
-                  stroke="#4F46E5"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M9 7h6M9 11h6M9 15h4"
-                  stroke="#4F46E5"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <text
-                  x="4"
-                  y="22"
-                  fontSize="5"
-                  fill="#4F46E5"
-                  fontWeight="bold"
-                >
-                  PDF
-                </text>
-              </svg>
-            </div>
-
-            <p className="text-[#111827] font-semibold text-base mb-1">
-              {uploadedFile.name}
-            </p>
-            <p className="text-[#6B7280] text-sm mb-6">
-              {formatSize(uploadedFile.size)}{" "}
-              <span className="text-[#22C55E] font-medium">
-                • Ready for analysis
-              </span>
-            </p>
-
-            <button
-              id="dashboard-change-file-btn"
-              onClick={() => inputRef.current?.click()}
-              className="px-5 py-2 rounded-lg border border-[#E5E7EB] text-[#374151] text-sm font-medium hover:bg-[#F3F4F6] transition-colors"
-            >
-              Change File
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] flex items-center justify-center mb-4">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#9CA3AF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="12" y1="18" x2="12" y2="12" />
-                <line x1="9" y1="15" x2="15" y2="15" />
-              </svg>
-            </div>
-            <p className="text-[#111827] font-semibold text-base mb-1">
-              Jatuhkan PDF skripsimu di sini
-            </p>
-            <p className="text-[#6B7280] text-sm mb-6">
-              atau klik untuk mencari langsung dari komputermu
-            </p>
-            <button
-              id="dashboard-browse-btn"
-              onClick={() => inputRef.current?.click()}
-              className="px-5 py-2 rounded-lg bg-[#4F46E5] text-white text-sm font-medium hover:bg-[#4338CA] transition-colors"
-            >
-              Cari PDF
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ChapterPageRanges({
-  chapters,
-  onChange,
-}: {
-  chapters: Chapter[];
-  onChange: (chapters: Chapter[]) => void;
-}) {
-  const handleChange = (
-    id: string,
-    field: "pageStart" | "pageEnd",
-    value: string,
-  ) => {
-    onChange(
-      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch)),
-    );
-  };
-
-  return (
-    <div className="w-full">
-      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-5">
-        Rentang Halaman Bab
-      </p>
-
-      <div className="space-y-3 max-w-lg mx-auto">
-        {chapters.map((chapter) => (
-          <div key={chapter.id} className="flex items-center">
-            <span className="flex-1 text-[#374151] text-sm font-medium">
-              {chapter.label}. {chapter.title}
-            </span>
-            <div className="flex items-center gap-2">
-              <input
-                id={`dashboard-chapter-${chapter.id}-start`}
-                type="number"
-                min="1"
-                placeholder="Awal"
-                value={chapter.pageStart}
-                onChange={(e) =>
-                  handleChange(chapter.id, "pageStart", e.target.value)
-                }
-                className="w-16 h-9 rounded-lg border border-[#E5E7EB] bg-white text-center text-sm text-[#374151] placeholder:text-[#D1D5DB] focus:outline-none focus:border-[#4F46E5] transition-colors"
-              />
-              <span className="text-[#D1D5DB]">—</span>
-              <input
-                id={`dashboard-chapter-${chapter.id}-end`}
-                type="number"
-                min="1"
-                placeholder="Akhir"
-                value={chapter.pageEnd}
-                onChange={(e) =>
-                  handleChange(chapter.id, "pageEnd", e.target.value)
-                }
-                className="w-16 h-9 rounded-lg border border-[#E5E7EB] bg-white text-center text-sm text-[#374151] placeholder:text-[#D1D5DB] focus:outline-none focus:border-[#4F46E5] transition-colors"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FocusArea({
-  chapters,
-  selectedIds,
-  onToggle,
-}: {
-  chapters: Chapter[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-}) {
-  const availableChapters = chapters.filter((ch) => ch.pageStart && ch.pageEnd);
-
-  return (
-    <div className="w-full">
-      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-4">
-        Area Fokus
-      </p>
-
-      <div className="flex flex-row flex-wrap gap-1.5 justify-center">
-        {availableChapters.map((chapter) => {
-          const isSelected = selectedIds.includes(chapter.id);
-          return (
-            <button
-              id={`dashboard-focus-${chapter.id}`}
-              key={chapter.id}
-              onClick={() => onToggle(chapter.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 whitespace-nowrap ${
-                isSelected
-                  ? "bg-[#4F46E5] border-[#4F46E5] text-white"
-                  : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#4F46E5] hover:text-[#4F46E5]"
-              }`}
-            >
-              Bab {chapter.label}: {chapter.title}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SimulationModeSelector({
-  selected,
-  onSelect,
-}: {
-  selected: SimulationMode;
-  onSelect: (mode: SimulationMode) => void;
-}) {
-  return (
-    <div className="w-full">
-      <p className="text-center text-[10px] font-semibold tracking-widest text-[#9CA3AF] uppercase mb-4">
-        Mode Simulasi
-      </p>
-
-      {/* Mobile: vertical list | sm+: 3-column grid */}
-      <div className="flex flex-col gap-2 sm:grid sm:grid-cols-3 sm:gap-3">
-        {SIMULATION_MODES.map((mode) => {
-          const isSelected = selected === mode.id;
-          return (
-            <button
-              id={`dashboard-mode-${mode.id}`}
-              key={mode.id}
-              onClick={() => onSelect(mode.id)}
-              className={`relative flex items-center gap-3 p-3 sm:p-4 rounded-xl border text-left transition-all duration-150 sm:flex-col sm:items-start ${
-                isSelected
-                  ? "border-[#4F46E5] bg-[#EEF2FF]"
-                  : "border-[#E5E7EB] bg-white hover:border-[#4F46E5]/40 hover:bg-[#F9FAFB]"
-              }`}
-            >
-              {/* Selected indicator strip on mobile */}
-              {isSelected && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[#4F46E5] sm:hidden" />
-              )}
-
-              {/* Icon */}
-              <div
-                className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-lg sm:w-8 sm:h-8 sm:text-base ${
-                  isSelected ? "bg-[#4F46E5]/10" : "bg-[#F3F4F6]"
-                }`}
-              >
-                {mode.icon}
-              </div>
-
-              {/* Text */}
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-semibold leading-tight ${
-                    isSelected ? "text-[#4F46E5]" : "text-[#111827]"
-                  }`}
-                >
-                  {mode.title}
-                </p>
-                <p className="text-xs text-[#6B7280] mt-0.5 leading-snug">
-                  {mode.description}
-                </p>
-              </div>
-
-              {/* Checkmark on mobile when selected */}
-              {isSelected && (
-                <svg
-                  className="sm:hidden flex-shrink-0 text-[#4F46E5]"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function DashboardPage() {
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
-  const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>(["3"]);
-  const [simulationMode, setSimulationMode] =
-    useState<SimulationMode>("standard");
-
-  const toggleChapter = (id: string) => {
-    setSelectedChapterIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
   const readyChapters = chapters.filter((ch) => ch.pageStart && ch.pageEnd);
-  const selectedFocusChapters = chapters.filter((ch) =>
-    selectedChapterIds.includes(ch.id),
-  );
+  const selectedFocusChapters = chapters.filter((ch) => selectedChapterIds.includes(ch.id));
 
   const canStartSimulation =
     uploadedFile !== null &&
-    readyChapters.length > 0 &&
-    selectedChapterIds.length > 0;
+    !isProcessing &&
+    selectedFocusChapters.length > 0 &&
+    selectedFocusChapters.every((ch) => ch.pageStart && ch.pageEnd);
 
   const getStatusText = () => {
-    if (!uploadedFile) return "Unggah skripsimu untuk mulai";
-    if (readyChapters.length === 0)
-      return "Define chapter page ranges to continue";
-    if (selectedChapterIds.length === 0)
-      return "Select at least one focus area";
-    const chapterNames = selectedFocusChapters.map((ch) => ch.title).join(", ");
-    const modeLabel = SIMULATION_MODES.find(
-      (m) => m.id === simulationMode,
-    )?.title;
-    return `System ready for ${chapterNames} · ${modeLabel}`;
+    if (!uploadedFile) return "Silakan unggah draf skripsi PDF Anda terlebih dahulu.";
+    if (isProcessing) return `Sedang memproses naskah: ${processingProgress}% (${processingPhase})`;
+    if (selectedFocusChapters.length === 0) return "Silakan pilih minimal satu bab sebagai area fokus simulasi.";
+    
+    const invalidChapters = selectedFocusChapters.filter((ch) => !ch.pageStart || !ch.pageEnd);
+    if (invalidChapters.length > 0) {
+      return `Tentukan rentang halaman untuk ${invalidChapters.map((ch) => `Bab ${ch.label}`).join(", ")}.`;
+    }
+
+    const chapterNames = selectedFocusChapters.map((ch) => `Bab ${ch.label}`).join(", ");
+    return `Sistem siap menganalisis ${chapterNames} dengan mode ${simulationMode.toUpperCase()}.`;
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
-      <DashboardHeader />
+    <div className="min-h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col font-body relative overflow-hidden">
+      {/* Decorative Atmospheric Glows */}
+      <div className="absolute top-[-20%] left-[30%] w-[600px] h-[600px] rounded-full bg-indigo-200/30 blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
-        {/* Page title */}
-        <div className="text-center">
-          <h1
-            className="text-2xl font-bold text-[#111827] mb-2"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      {/* Header */}
+      <header className="w-full bg-white/80 backdrop-blur-md border-b border-[#C7C4D8]/40 px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm animate-header">
+        <a href="/" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
+            <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
+              neurology
+            </span>
+          </div>
+          <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
+            Phom
+          </span>
+        </a>
+
+        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+          {/* Active status pill */}
+          <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-100 bg-indigo-50/50 text-[#3525cd] font-heading text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Workspace Aktif
+          </div>
+          
+          {/* User profile dropdown button */}
+          <button 
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
           >
-            Ruang Kerja
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
+              AS
+            </div>
+            <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
+              Dr. Aris Setiawan
+            </span>
+            <span className="material-symbols-outlined text-base text-gray-400">
+              keyboard_arrow_down
+            </span>
+          </button>
+
+          {/* Profile Dropdown Menu */}
+          {profileDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
+              <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
+                <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+              </div>
+              <a 
+                href="/history" 
+                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
+              >
+                <span className="material-symbols-outlined text-base">history</span>
+                Riwayat Sesi
+              </a>
+              <a 
+                href="/" 
+                className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+              >
+                <span className="material-symbols-outlined text-base">logout</span>
+                Keluar
+              </a>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-10 flex flex-col gap-10 z-10">
+        
+        {/* Header Intro */}
+        <div className="text-center max-w-2xl mx-auto animate-title">
+          <h1 className="text-4xl font-heading font-extrabold text-[#0B1C30] tracking-tight mb-3">
+            Dashboard Simulator
           </h1>
-          <p className="text-sm text-[#6B7280]">
-            Unggah draft skripsimu untuk memulai simulasi sidang.
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Unggah naskah skripsi PDF Anda, verifikasi cakupan bab, dan pilih intensitas simulasi ujian untuk memulai pertahanan akademik Anda.
           </p>
         </div>
 
-        {/* File upload */}
-        <FileUploadZone
-          uploadedFile={uploadedFile}
-          onFileSelect={setUploadedFile}
-          onFileRemove={() => setUploadedFile(null)}
-        />
-
-        {/* Chapter page ranges */}
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
-          <ChapterPageRanges chapters={chapters} onChange={setChapters} />
-        </div>
-
-        {/* Focus area */}
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
-          <FocusArea
-            chapters={chapters}
-            selectedIds={selectedChapterIds}
-            onToggle={toggleChapter}
-          />
-        </div>
-
-        {/* Simulation mode */}
-        <div className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
-          <SimulationModeSelector
-            selected={simulationMode}
-            onSelect={setSimulationMode}
-          />
-        </div>
-
-        {/* CTA */}
-        <div className="flex flex-col items-center gap-3 pb-6">
-          <button
-            id="dashboard-start-simulation-btn"
-            disabled={!canStartSimulation}
-            className={`w-full py-4 rounded-2xl text-white font-semibold text-base flex items-center justify-center gap-2 transition-all duration-200 ${
-              canStartSimulation
-                ? "bg-[#4F46E5] hover:bg-[#4338CA] shadow-[0_4px_14px_rgba(79,70,229,0.35)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.45)] hover:-translate-y-0.5"
-                : "bg-[#D1D5DB] cursor-not-allowed"
-            }`}
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        {/* 1. Centered Processing Status Zone / Dropzone */}
+        <div className="w-full max-w-4xl mx-auto animate-card-1">
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            className={`w-full rounded-2xl border-2 border-dashed transition-all duration-300 ${
+              isDragging
+                ? "border-[#3525cd] bg-indigo-50/50 shadow-md scale-[1.01]"
+                : "border-[#C7C4D8]/80 bg-white hover:border-[#3525cd]/60 shadow-sm"
+            } p-8`}
           >
-            Mulai Simulasi
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+
+            <div className="flex flex-col items-center justify-center text-center">
+              {uploadedFile ? (
+                <div className="w-full max-w-xl flex flex-col items-center">
+                  {/* Processing / Ingestion Active View */}
+                  <div className="relative mb-5">
+                    <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-sm relative overflow-hidden">
+                      <span className="material-symbols-outlined text-4xl text-[#3525cd] z-10 font-bold">
+                        picture_as_pdf
+                      </span>
+                      {/* Scanline line anim */}
+                      {isProcessing && (
+                        <div className="absolute top-0 bottom-0 left-0 w-full bg-gradient-to-b from-transparent via-indigo-600/20 to-transparent animate-scanline z-0" />
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="text-[#0B1C30] font-bold text-base mb-1 truncate max-w-[85%]">
+                    {uploadedFile.name}
+                  </h3>
+                  
+                  {isProcessing ? (
+                    <div className="w-full mt-3">
+                      <div className="flex justify-between items-center mb-1.5 text-xs">
+                        <span className="text-indigo-600 font-bold animate-pulse">
+                          {processingPhase}
+                        </span>
+                        <span className="text-gray-500 font-semibold">{processingProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-[#3525cd] to-[#6f3dd9] rounded-full transition-all duration-300"
+                          style={{ width: `${processingProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center mt-1">
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100/50 mb-6">
+                        <span className="material-symbols-outlined text-sm font-bold">check_circle</span>
+                        Naskah Berhasil Diproses • {formatSize(uploadedFile.size)}
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-4 py-2 rounded-xl border border-[#C7C4D8]/60 text-gray-700 text-xs font-bold hover:bg-gray-50 transition-all shadow-sm active:scale-[0.98]"
+                        >
+                          Ganti File
+                        </button>
+                        <button
+                          onClick={handleRemoveFile}
+                          className="px-4 py-2 rounded-xl border border-red-100 text-red-600 text-xs font-bold hover:bg-red-50/50 transition-all shadow-sm active:scale-[0.98]"
+                        >
+                          Hapus File
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-50/50 flex items-center justify-center mb-4 border border-indigo-100/40">
+                    <span className="material-symbols-outlined text-3xl text-indigo-500">
+                      cloud_upload
+                    </span>
+                  </div>
+                  <h3 className="text-[#0B1C30] font-bold text-base mb-1">
+                    Jatuhkan naskah PDF skripsi Anda di sini
+                  </h3>
+                  <p className="text-gray-400 text-xs mb-5 max-w-xs leading-relaxed">
+                    Unggah dokumen Bab I - V dalam satu file PDF (ukuran maksimal 25MB)
+                  </p>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-2.5 rounded-xl bg-[#3525cd] hover:bg-[#281baf] text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/10 active:scale-[0.98]"
+                  >
+                    Pilih File PDF
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Workspace Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Column: Chapter Configuration */}
+          <section className="lg:col-span-7 bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-2 flex flex-col">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-50">
+              <div>
+                <h2 className="text-lg font-heading font-extrabold text-[#0B1C30]">
+                  Chapter Configuration
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Tentukan judul bab, rentang halaman, dan centang area yang ingin diuji.
+                </p>
+              </div>
+              <button
+                onClick={handleAddChapter}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-100 hover:border-indigo-200 text-[#3525cd] hover:bg-indigo-50/30 text-xs font-bold transition-all active:scale-[0.97]"
+              >
+                <span className="material-symbols-outlined text-base">add</span>
+                Tambah Bab
+              </button>
+            </div>
+
+            {/* Config Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-gray-100 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    <th className="py-2.5 px-2 w-10">Fokus</th>
+                    <th className="py-2.5 px-2 w-8 text-center">No</th>
+                    <th className="py-2.5 px-2">Nama Bab / Subjek</th>
+                    <th className="py-2.5 px-2 w-48 text-center">Halaman</th>
+                    <th className="py-2.5 px-2 w-12 text-center">Hapus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chapters.map((chapter) => {
+                    const isSelected = selectedChapterIds.includes(chapter.id);
+                    
+                    return (
+                      <tr 
+                        key={chapter.id}
+                        className={`border-b border-gray-50 transition-colors group ${
+                          isSelected ? "bg-indigo-50/15" : "hover:bg-gray-50/30"
+                        }`}
+                      >
+                        {/* Checkbox Selector */}
+                        <td className="py-3 px-2 text-center">
+                          <input 
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleChapter(chapter.id)}
+                            className="rounded border-[#C7C4D8] text-[#3525cd] focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer transition-all"
+                          />
+                        </td>
+
+                        {/* Label No. (e.g. Bab I) */}
+                        <td className="py-3 px-2 text-center text-xs font-bold text-gray-400">
+                          {chapter.label}
+                        </td>
+
+                        {/* Editable Title */}
+                        <td className="py-3 px-2">
+                          <input
+                            type="text"
+                            value={chapter.title}
+                            onChange={(e) => handleChapterTitleChange(chapter.id, e.target.value)}
+                            className="w-full bg-transparent border-b border-transparent focus:border-indigo-400 hover:border-gray-200 text-xs font-semibold text-gray-700 py-1 focus:outline-none transition-colors"
+                            placeholder="Tulis Judul Bab..."
+                          />
+                        </td>
+
+                        {/* Page Ranges */}
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="Mulai"
+                              value={chapter.pageStart}
+                              onChange={(e) => handlePageChange(chapter.id, "pageStart", e.target.value)}
+                              className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
+                            />
+                            <span className="text-gray-300 text-sm">—</span>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="Akhir"
+                              value={chapter.pageEnd}
+                              onChange={(e) => handlePageChange(chapter.id, "pageEnd", e.target.value)}
+                              className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
+                            />
+                          </div>
+                        </td>
+
+                        {/* Delete Action */}
+                        <td className="py-3 px-2 text-center">
+                          <button
+                            onClick={() => handleDeleteChapter(chapter.id)}
+                            className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            title="Hapus bab"
+                          >
+                            <span className="material-symbols-outlined text-base font-bold">delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {chapters.length === 0 && (
+              <div className="py-8 text-center text-xs text-gray-400 font-medium">
+                Belum ada bab dikonfigurasi. Klik "Tambah Bab" untuk memulai.
+              </div>
+            )}
+          </section>
+
+          {/* Right Column: Session Intensity */}
+          <section className="lg:col-span-5 bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-3 flex flex-col gap-6">
+            <div>
+              <h2 className="text-lg font-heading font-extrabold text-[#0B1C30]">
+                Session Intensity
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Pilih beban mental & frekuensi pertanyaan ujian.
+              </p>
+            </div>
+
+            {/* Intensity List */}
+            <div className="flex flex-col gap-4">
+              {SIMULATION_MODES.map((mode) => {
+                const isSelected = simulationMode === mode.id;
+                
+                return (
+                  <button
+                    key={mode.id}
+                    onClick={() => setSimulationMode(mode.id)}
+                    className={`relative p-4.5 rounded-xl border text-left transition-all duration-300 flex items-start gap-4 ${
+                      isSelected
+                        ? "border-[#3525cd] bg-[#3525cd]/[0.02] shadow-sm scale-[1.01]"
+                        : "border-[#C7C4D8]/50 bg-white hover:border-[#3525cd]/30"
+                    }`}
+                  >
+                    {/* Glowing highlight indicator */}
+                    {isSelected && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-[#3525cd]" />
+                    )}
+
+                    {/* Icon Bubble with custom mode color */}
+                    <div
+                      className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
+                        isSelected
+                          ? "bg-indigo-50 border-indigo-100 text-[#3525cd]"
+                          : "bg-gray-50 border-gray-100 text-gray-400"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-lg font-bold">
+                        {mode.icon}
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 pr-6">
+                      <h3
+                        className={`text-xs font-bold leading-none ${
+                          isSelected ? "text-[#3525cd]" : "text-[#0B1C30]"
+                        }`}
+                      >
+                        {mode.title}
+                      </h3>
+                      <p className="text-[10px] text-gray-400 mt-1.5 leading-normal">
+                        {mode.description}
+                      </p>
+                    </div>
+
+                    {/* Checkmark bubble */}
+                    {isSelected && (
+                      <span className="material-symbols-outlined text-[#3525cd] text-base font-bold absolute top-4 right-4 animate-scaleUp">
+                        check_circle
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+        </div>
+
+        {/* Start Simulation Action */}
+        <div className="flex flex-col items-center gap-3 pb-10 animate-cta max-w-xl mx-auto w-full">
+          <button
+            onClick={() => {
+              if (canStartSimulation) {
+                // Navigate to simulation session (pass parameters or mock-session id)
+                router.push(`/workspace/mock-session`);
+              }
+            }}
+            disabled={!canStartSimulation}
+            className={`w-full py-4 rounded-2xl text-white font-heading font-extrabold text-base flex items-center justify-center gap-2 transition-all duration-300 ${
+              canStartSimulation
+                ? "bg-[#3525cd] hover:bg-[#281baf] shadow-lg shadow-indigo-600/20 hover:shadow-xl hover:shadow-indigo-600/35 hover:-translate-y-0.5 cursor-pointer"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            Mulai Sidang Simulasi
+            <span className="material-symbols-outlined text-lg font-bold">play_arrow</span>
           </button>
 
-          <p className="text-xs text-[#9CA3AF] text-center">
+          <p className="text-xs text-gray-400 text-center font-medium mt-1 leading-relaxed px-4">
             {getStatusText()}
           </p>
         </div>
+
       </main>
+
+      {/* Styled block with animations */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes scanline {
+          0% { transform: translateY(-100%); }
+          50% { transform: translateY(100%); }
+          100% { transform: translateY(-100%); }
+        }
+        @keyframes slideDownFadeIn {
+          from { transform: translateY(-12px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideUpFadeIn {
+          from { transform: translateY(24px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+          from { transform: scale(0.8); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-scanline {
+          animation: scanline 3s ease-in-out infinite;
+        }
+        .animate-header {
+          animation: slideDownFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-title {
+          animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+          opacity: 0;
+        }
+        .animate-card-1 {
+          animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+          opacity: 0;
+        }
+        .animate-card-2 {
+          animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+          opacity: 0;
+        }
+        .animate-card-3 {
+          animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+          opacity: 0;
+        }
+        .animate-cta {
+          animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+          opacity: 0;
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+        .animate-scaleUp {
+          animation: scaleUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
     </div>
   );
 }
