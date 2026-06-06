@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { auth } from "./lib/auth";
+import { swaggerApp } from "./lib/swagger";
 import documents from "./routes/documents";
 import chapters from "./routes/chapters";
 import sessions from "./routes/sessions";
@@ -10,6 +11,9 @@ import questions from "./routes/questions";
 import { authMiddleware } from "./middleware/auth";
 
 const app = new Hono();
+
+// Swagger UI & OpenAPI spec (no auth required)
+app.route("/", swaggerApp);
 
 app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
