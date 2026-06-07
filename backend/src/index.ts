@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { auth } from "./lib/auth";
+import { cors } from "hono/cors";
 import { swaggerApp } from "./lib/swagger";
 import documents from "./routes/documents";
 import chapters from "./routes/chapters";
@@ -11,6 +12,16 @@ import questions from "./routes/questions";
 import { authMiddleware } from "./middleware/auth";
 
 const app = new Hono();
+
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:3001"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 // Swagger UI & OpenAPI spec (no auth required)
 app.route("/", swaggerApp);
