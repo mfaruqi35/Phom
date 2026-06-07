@@ -23,8 +23,7 @@ app.use(
   }),
 );
 
-// Swagger UI & OpenAPI spec (no auth required)
-app.route("/", swaggerApp);
+
 
 app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
@@ -39,6 +38,9 @@ app.route("/api/messages", messages);
 app.route("/api/answer-scores", answerScores);
 app.route("/api/evaluation", evaluation);
 app.route("/api/questions", questions);
+
+// Swagger UI & OpenAPI spec — mounted LAST so actual API routes take priority
+app.route("/", swaggerApp);
 
 export default {
   port: 3001,

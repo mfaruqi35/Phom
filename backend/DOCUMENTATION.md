@@ -1,8 +1,9 @@
 # Phom Backend — API Documentation
 
-Base URL (local): `http://localhost:3000`
+Base URL (local): `http://localhost:3001`
 
 ---
+
 
 ## Authentication
 
@@ -12,6 +13,7 @@ Sertakan session cookie yang diperoleh dari login Better Auth pada setiap reques
 | Header | Value |
 | ------ | ----- |
 | `Cookie` | `better-auth.session_token=<token>` (dikirim otomatis oleh browser / ky) |
+| `Origin` | `http://localhost:3001` (wajib saat testing via Postman) |
 
 Jika tidak ada session yang valid, semua endpoint terproteksi akan mengembalikan `401 Unauthorized`.
 
@@ -21,11 +23,20 @@ Jika tidak ada session yang valid, semua endpoint terproteksi akan mengembalikan
 
 Dikelola langsung oleh **Better Auth**. Base path: `/api/auth`
 
+> **Catatan Testing (Postman):** Semua request ke `/api/auth/*` wajib menyertakan header `Origin: http://localhost:3001`. Browser mengirim header ini secara otomatis, tetapi Postman tidak.
+
 ### `POST /api/auth/sign-up/email`
 
 Mendaftarkan akun baru dengan email dan password.
 
-**Request**
+**Request Headers**
+
+| Header | Value |
+| ------ | ----- |
+| `Content-Type` | `application/json` |
+| `Origin` | `http://localhost:3001` |
+
+**Request Body**
 
 ```json
 {
@@ -35,16 +46,18 @@ Mendaftarkan akun baru dengan email dan password.
 }
 ```
 
-**201 Created**
+**200 OK**
 
 ```json
 {
-  "token": "eyJhbGci...",
+  "redirect": false,
+  "token": "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu",
   "user": {
-    "id": "cuid_xxx",
+    "id": "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW",
     "name": "Budi Santoso",
     "email": "budi@example.com",
     "emailVerified": false,
+    "image": null,
     "createdAt": "2026-06-06T10:00:00.000Z",
     "updatedAt": "2026-06-06T10:00:00.000Z"
   }
@@ -65,7 +78,14 @@ Mendaftarkan akun baru dengan email dan password.
 
 Login dengan email dan password.
 
-**Request**
+**Request Headers**
+
+| Header | Value |
+| ------ | ----- |
+| `Content-Type` | `application/json` |
+| `Origin` | `http://localhost:3001` |
+
+**Request Body**
 
 ```json
 {
@@ -78,23 +98,38 @@ Login dengan email dan password.
 
 ```json
 {
-  "token": "eyJhbGci...",
+  "redirect": false,
+  "token": "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu",
   "user": {
-    "id": "cuid_xxx",
+    "id": "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW",
     "name": "Budi Santoso",
     "email": "budi@example.com",
     "emailVerified": false,
+    "image": null,
     "createdAt": "2026-06-06T10:00:00.000Z",
     "updatedAt": "2026-06-06T10:00:00.000Z"
   }
 }
 ```
 
+Session cookie `better-auth.session_token` di-set otomatis oleh server pada response ini.
+
 **401 Unauthorized** — password salah atau email tidak ditemukan
 
 ```json
 {
-  "message": "Invalid credentials"
+  "code": "INVALID_EMAIL_OR_PASSWORD",
+  "message": "Invalid email or password",
+  "status": 401
+}
+```
+
+**403 Forbidden** — header `Origin` tidak ada atau tidak dikenal
+
+```json
+{
+  "message": "Missing or null Origin",
+  "code": "MISSING_OR_NULL_ORIGIN"
 }
 ```
 
@@ -124,13 +159,22 @@ Mengambil data session yang sedang aktif. Digunakan oleh frontend untuk mengecek
 {
   "session": {
     "id": "session_xxx",
-    "userId": "cuid_xxx",
-    "expiresAt": "2026-07-06T10:00:00.000Z"
+    "createdAt": "2026-06-07T12:12:36.051Z",
+    "updatedAt": "2026-06-07T12:12:36.051Z",
+    "userId": "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW",
+    "expiresAt": "2026-07-07T12:12:36.051Z",
+    "token": "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu",
+    "ipAddress": "127.0.0.1",
+    "userAgent": "PostmanRuntime/7.x"
   },
   "user": {
-    "id": "cuid_xxx",
+    "id": "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW",
     "name": "Budi Santoso",
-    "email": "budi@example.com"
+    "email": "budi@example.com",
+    "emailVerified": false,
+    "image": null,
+    "createdAt": "2026-06-07T12:12:36.051Z",
+    "updatedAt": "2026-06-07T12:12:36.051Z"
   }
 }
 ```

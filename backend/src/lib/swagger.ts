@@ -41,7 +41,7 @@ export const swaggerApp = new OpenAPIHono({
             message: "Invalid request data.",
           },
         },
-        400
+        400,
       );
     }
   },
@@ -67,16 +67,30 @@ swaggerApp.doc("/openapi.json", {
       "dari Better Auth (`better-auth.session_token`). " +
       "Cookie dikirim otomatis oleh browser setelah login.",
   },
-  servers: [{ url: "http://localhost:3000", description: "Local Development" }],
+  servers: [{ url: "http://localhost:3001", description: "Local Development" }],
   tags: [
-    { name: "Auth", description: "Autentikasi menggunakan Better Auth (email+password & Google OAuth)" },
+    {
+      name: "Auth",
+      description:
+        "Autentikasi menggunakan Better Auth (email+password & Google OAuth)",
+    },
     { name: "Documents", description: "Manajemen dokumen PDF skripsi" },
     { name: "Chapters", description: "Manajemen bab per dokumen" },
     { name: "Sessions", description: "Sesi simulasi sidang" },
-    { name: "Questions", description: "Pertanyaan yang di-generate oleh RAG service" },
-    { name: "Messages", description: "Percakapan dalam workspace simulasi (auto-trigger evaluasi)" },
+    {
+      name: "Questions",
+      description: "Pertanyaan yang di-generate oleh RAG service",
+    },
+    {
+      name: "Messages",
+      description:
+        "Percakapan dalam workspace simulasi (auto-trigger evaluasi)",
+    },
     { name: "Answer Scores", description: "Skor penilaian per jawaban" },
-    { name: "Evaluation", description: "Laporan evaluasi akhir sesi dengan formula weighted score" },
+    {
+      name: "Evaluation",
+      description: "Laporan evaluasi akhir sesi dengan formula weighted score",
+    },
   ],
 });
 
@@ -94,7 +108,7 @@ swaggerApp.openapi(
     method: "post",
     path: "/api/auth/sign-up/email",
     summary: "Daftar akun baru",
-    description: "Mendaftarkan user baru dengan email dan password.",
+    description: "Mendaftarkan user baru dengan email dan password. Wajib menyertakan header Origin: http://localhost:3001 saat testing via Postman.",
     request: {
       body: {
         required: true,
@@ -102,7 +116,10 @@ swaggerApp.openapi(
           "application/json": {
             schema: z.object({
               name: z.string().openapi({ example: "Budi Santoso" }),
-              email: z.string().email().openapi({ example: "budi@example.com" }),
+              email: z
+                .string()
+                .email()
+                .openapi({ example: "budi@example.com" }),
               password: z.string().min(8).openapi({ example: "password123" }),
             }),
           },
@@ -110,19 +127,30 @@ swaggerApp.openapi(
       },
     },
     responses: {
-      201: {
+      200: {
         description: "Akun berhasil dibuat",
         content: {
           "application/json": {
             schema: z.object({
-              token: z.string(),
+              redirect: z.boolean().openapi({ example: false }),
+              token: z.string().openapi({ example: "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu" }),
               user: z.object({
-                id: cuidSchema,
+                id: cuidSchema.openapi({ example: "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW" }),
                 name: z.string().openapi({ example: "Budi Santoso" }),
-                email: z.string().email().openapi({ example: "budi@example.com" }),
+                email: z
+                  .string()
+                  .email()
+                  .openapi({ example: "budi@example.com" }),
                 emailVerified: z.boolean().openapi({ example: false }),
-                createdAt: z.string().datetime().openapi({ example: "2026-06-06T10:00:00.000Z" }),
-                updatedAt: z.string().datetime().openapi({ example: "2026-06-06T10:00:00.000Z" }),
+                image: z.string().nullable().openapi({ example: null }),
+                createdAt: z
+                  .string()
+                  .datetime()
+                  .openapi({ example: "2026-06-06T10:00:00.000Z" }),
+                updatedAt: z
+                  .string()
+                  .datetime()
+                  .openapi({ example: "2026-06-06T10:00:00.000Z" }),
               }),
             }),
           },
@@ -132,13 +160,15 @@ swaggerApp.openapi(
         description: "Email sudah terdaftar",
         content: {
           "application/json": {
-            schema: z.object({ message: z.string().openapi({ example: "User already exists" }) }),
+            schema: z.object({
+              message: z.string().openapi({ example: "User already exists" }),
+            }),
           },
         },
       },
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -147,14 +177,18 @@ swaggerApp.openapi(
     method: "post",
     path: "/api/auth/sign-in/email",
     summary: "Login",
-    description: "Login dengan email dan password. Session cookie di-set otomatis oleh server.",
+    description:
+      "Login dengan email dan password. Session cookie di-set otomatis oleh server. Wajib menyertakan header Origin: http://localhost:3001 saat testing via Postman.",
     request: {
       body: {
         required: true,
         content: {
           "application/json": {
             schema: z.object({
-              email: z.string().email().openapi({ example: "budi@example.com" }),
+              email: z
+                .string()
+                .email()
+                .openapi({ example: "budi@example.com" }),
               password: z.string().openapi({ example: "password123" }),
             }),
           },
@@ -167,20 +201,56 @@ swaggerApp.openapi(
         content: {
           "application/json": {
             schema: z.object({
-              token: z.string(),
+              redirect: z.boolean().openapi({ example: false }),
+              token: z.string().openapi({ example: "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu" }),
               user: z.object({
-                id: cuidSchema,
+                id: cuidSchema.openapi({ example: "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW" }),
                 name: z.string().openapi({ example: "Budi Santoso" }),
-                email: z.string().email().openapi({ example: "budi@example.com" }),
+                email: z
+                  .string()
+                  .email()
+                  .openapi({ example: "budi@example.com" }),
+                emailVerified: z.boolean().openapi({ example: false }),
+                image: z.string().nullable().openapi({ example: null }),
+                createdAt: z
+                  .string()
+                  .datetime()
+                  .openapi({ example: "2026-06-06T10:00:00.000Z" }),
+                updatedAt: z
+                  .string()
+                  .datetime()
+                  .openapi({ example: "2026-06-06T10:00:00.000Z" }),
               }),
             }),
           },
         },
       },
-      401: err("Email atau password salah"),
+      401: {
+        description: "Email atau password salah",
+        content: {
+          "application/json": {
+            schema: z.object({
+              code: z.string().openapi({ example: "INVALID_EMAIL_OR_PASSWORD" }),
+              message: z.string().openapi({ example: "Invalid email or password" }),
+              status: z.number().openapi({ example: 401 }),
+            }),
+          },
+        },
+      },
+      403: {
+        description: "Origin header tidak valid atau kosong",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Missing or null Origin" }),
+              code: z.string().openapi({ example: "MISSING_OR_NULL_ORIGIN" }),
+            }),
+          },
+        },
+      },
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -193,11 +263,15 @@ swaggerApp.openapi(
     responses: {
       200: {
         description: "Logout berhasil",
-        content: { "application/json": { schema: z.object({ success: z.literal(true) }) } },
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(true) }),
+          },
+        },
       },
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -206,7 +280,8 @@ swaggerApp.openapi(
     method: "get",
     path: "/api/auth/get-session",
     summary: "Cek session aktif",
-    description: "Digunakan frontend untuk verifikasi status login. Mengembalikan `null` jika belum login.",
+    description:
+      "Digunakan frontend untuk verifikasi status login. Mengembalikan `null` jika belum login.",
     responses: {
       200: {
         description: "Data session atau null",
@@ -215,14 +290,41 @@ swaggerApp.openapi(
             schema: z
               .object({
                 session: z.object({
-                  id: z.string(),
-                  userId: cuidSchema,
-                  expiresAt: z.string().datetime().openapi({ example: "2026-07-06T10:00:00.000Z" }),
+                  id: z.string().openapi({ example: "session_xxx" }),
+                  createdAt: z
+                    .string()
+                    .datetime()
+                    .openapi({ example: "2026-06-07T12:12:36.051Z" }),
+                  updatedAt: z
+                    .string()
+                    .datetime()
+                    .openapi({ example: "2026-06-07T12:12:36.051Z" }),
+                  userId: cuidSchema.openapi({ example: "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW" }),
+                  expiresAt: z
+                    .string()
+                    .datetime()
+                    .openapi({ example: "2026-07-07T12:12:36.051Z" }),
+                  token: z.string().openapi({ example: "3GKU3RHvvT8OWbDcBs5NdWobLbp1PbAu" }),
+                  ipAddress: z.string().openapi({ example: "127.0.0.1" }),
+                  userAgent: z.string().openapi({ example: "PostmanRuntime/7.x" }),
                 }),
                 user: z.object({
-                  id: cuidSchema,
+                  id: cuidSchema.openapi({ example: "0w10wb6s0n5QB6zR1nzdGXVeaVTkbsUW" }),
                   name: z.string().openapi({ example: "Budi Santoso" }),
-                  email: z.string().email().openapi({ example: "budi@example.com" }),
+                  email: z
+                    .string()
+                    .email()
+                    .openapi({ example: "budi@example.com" }),
+                  emailVerified: z.boolean().openapi({ example: false }),
+                  image: z.string().nullable().openapi({ example: null }),
+                  createdAt: z
+                    .string()
+                    .datetime()
+                    .openapi({ example: "2026-06-07T12:12:36.051Z" }),
+                  updatedAt: z
+                    .string()
+                    .datetime()
+                    .openapi({ example: "2026-06-07T12:12:36.051Z" }),
                 }),
               })
               .nullable(),
@@ -231,7 +333,7 @@ swaggerApp.openapi(
       },
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -258,7 +360,8 @@ swaggerApp.openapi(
               file: z.string().openapi({
                 type: "string",
                 format: "binary",
-                description: "File PDF skripsi (max sesuai konfigurasi Supabase Storage)",
+                description:
+                  "File PDF skripsi (max sesuai konfigurasi Supabase Storage)",
               }),
               title: z.string().openapi({ example: "Skripsi Analisis Sistem" }),
             }),
@@ -267,13 +370,16 @@ swaggerApp.openapi(
       },
     },
     responses: {
-      201: { description: "Dokumen berhasil diupload", content: { "application/json": { schema: success(documentSchema) } } },
+      201: {
+        description: "Dokumen berhasil diupload",
+        content: { "application/json": { schema: success(documentSchema) } },
+      },
       400: err("Field tidak lengkap atau file bukan PDF"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 swaggerApp.openapi(
@@ -282,15 +388,21 @@ swaggerApp.openapi(
     method: "get",
     path: "/api/documents",
     summary: "Daftar dokumen milik user",
-    description: "Mengembalikan semua dokumen milik user yang sedang login, diurutkan dari yang terbaru.",
+    description:
+      "Mengembalikan semua dokumen milik user yang sedang login, diurutkan dari yang terbaru.",
     security: [{ cookieAuth: [] }],
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(documentSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(documentSchema)) },
+        },
+      },
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -299,22 +411,31 @@ swaggerApp.openapi(
     method: "get",
     path: "/api/documents/{id}/status",
     summary: "Status pemrosesan dokumen",
-    description: "Digunakan untuk polling setiap 2–3 detik hingga status menjadi `READY` atau `FAILED`.",
+    description:
+      "Digunakan untuk polling setiap 2–3 detik hingga status menjadi `READY` atau `FAILED`.",
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        id: cuidSchema.openapi({ param: { name: "id", in: "path" }, description: "ID dokumen" }),
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID dokumen",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(documentStatusSchema) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(documentStatusSchema) },
+        },
+      },
       400: err("ID dokumen tidak ada di path"),
       401: err("Tidak ada session aktif"),
       404: err("Dokumen tidak ditemukan"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -330,17 +451,25 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        documentId: cuidSchema.openapi({ param: { name: "documentId", in: "path" }, description: "ID dokumen" }),
+        documentId: cuidSchema.openapi({
+          param: { name: "documentId", in: "path" },
+          description: "ID dokumen",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(chapterSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(chapterSchema)) },
+        },
+      },
       400: err("ID dokumen tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -353,7 +482,10 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        documentId: cuidSchema.openapi({ param: { name: "documentId", in: "path" }, description: "ID dokumen" }),
+        documentId: cuidSchema.openapi({
+          param: { name: "documentId", in: "path" },
+          description: "ID dokumen",
+        }),
       }),
       body: {
         required: true,
@@ -365,13 +497,18 @@ swaggerApp.openapi(
       },
     },
     responses: {
-      201: { description: "Bab berhasil dibuat", content: { "application/json": { schema: success(z.array(chapterSchema)) } } },
+      201: {
+        description: "Bab berhasil dibuat",
+        content: {
+          "application/json": { schema: success(z.array(chapterSchema)) },
+        },
+      },
       400: err("Field tidak lengkap atau chapters bukan array"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 swaggerApp.openapi(
@@ -380,11 +517,15 @@ swaggerApp.openapi(
     method: "put",
     path: "/api/chapters/{id}",
     summary: "Update data bab",
-    description: "Semua field bersifat opsional — hanya field yang dikirim yang akan diperbarui.",
+    description:
+      "Semua field bersifat opsional — hanya field yang dikirim yang akan diperbarui.",
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        id: cuidSchema.openapi({ param: { name: "id", in: "path" }, description: "ID bab" }),
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID bab",
+        }),
       }),
       body: {
         required: true,
@@ -394,13 +535,16 @@ swaggerApp.openapi(
       },
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(chapterSchema) } } },
+      200: {
+        description: "OK",
+        content: { "application/json": { schema: success(chapterSchema) } },
+      },
       400: err("ID bab tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -412,17 +556,23 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        id: cuidSchema.openapi({ param: { name: "id", in: "path" }, description: "ID bab" }),
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID bab",
+        }),
       }),
     },
     responses: {
-      200: { description: "Berhasil dihapus", content: { "application/json": { schema: success(z.null()) } } },
+      200: {
+        description: "Berhasil dihapus",
+        content: { "application/json": { schema: success(z.null()) } },
+      },
       400: err("ID bab tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -448,9 +598,12 @@ swaggerApp.openapi(
               documentId: cuidSchema,
               mode: z.enum(["QUICK", "STANDARD", "DEEP"]).openapi({
                 example: "STANDARD",
-                description: "QUICK: 3–5 pertanyaan | STANDARD: 8–10 | DEEP: 12–15",
+                description:
+                  "QUICK: 3–5 pertanyaan | STANDARD: 8–10 | DEEP: 12–15",
               }),
-              chapterIds: z.array(cuidSchema).openapi({ example: ["cmc1234", "cmc5678"] }),
+              chapterIds: z
+                .array(cuidSchema)
+                .openapi({ example: ["cmc1234", "cmc5678"] }),
             }),
           },
         },
@@ -464,7 +617,7 @@ swaggerApp.openapi(
             schema: success(
               sessionSchema.extend({
                 sessionChapters: z.array(sessionChapterSchema),
-              })
+              }),
             ),
           },
         },
@@ -474,7 +627,7 @@ swaggerApp.openapi(
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 swaggerApp.openapi(
@@ -483,15 +636,21 @@ swaggerApp.openapi(
     method: "get",
     path: "/api/sessions/user",
     summary: "Daftar sesi milik user",
-    description: "Diurutkan dari yang terbaru. Digunakan di halaman `/history`.",
+    description:
+      "Diurutkan dari yang terbaru. Digunakan di halaman `/history`.",
     security: [{ cookieAuth: [] }],
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(sessionSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(sessionSchema)) },
+        },
+      },
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -503,18 +662,24 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        id: cuidSchema.openapi({ param: { name: "id", in: "path" }, description: "ID sesi" }),
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(sessionSchema) } } },
+      200: {
+        description: "OK",
+        content: { "application/json": { schema: success(sessionSchema) } },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       404: err("Sesi tidak ditemukan"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -529,17 +694,23 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        id: cuidSchema.openapi({ param: { name: "id", in: "path" }, description: "ID sesi" }),
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(sessionSchema) } } },
+      200: {
+        description: "OK",
+        content: { "application/json": { schema: success(sessionSchema) } },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -565,8 +736,12 @@ swaggerApp.openapi(
             schema: z.object({
               sessionId: cuidSchema,
               documentId: cuidSchema,
-              chapterIds: z.array(cuidSchema).openapi({ example: ["cmc1234", "cmc5678"] }),
-              mode: z.enum(["QUICK", "STANDARD", "DEEP"]).openapi({ example: "STANDARD" }),
+              chapterIds: z
+                .array(cuidSchema)
+                .openapi({ example: ["cmc1234", "cmc5678"] }),
+              mode: z
+                .enum(["QUICK", "STANDARD", "DEEP"])
+                .openapi({ example: "STANDARD" }),
             }),
           },
         },
@@ -575,14 +750,18 @@ swaggerApp.openapi(
     responses: {
       201: {
         description: "Pertanyaan berhasil di-generate",
-        content: { "application/json": { schema: success(z.array(questionSchema)) } },
+        content: {
+          "application/json": { schema: success(z.array(questionSchema)) },
+        },
       },
       400: err("Field tidak lengkap"),
       401: err("Tidak ada session aktif"),
-      500: err("Internal Server Error atau RAG service tidak menghasilkan pertanyaan"),
+      500: err(
+        "Internal Server Error atau RAG service tidak menghasilkan pertanyaan",
+      ),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 swaggerApp.openapi(
@@ -595,17 +774,25 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        sessionId: cuidSchema.openapi({ param: { name: "sessionId", in: "path" }, description: "ID sesi" }),
+        sessionId: cuidSchema.openapi({
+          param: { name: "sessionId", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(questionSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(questionSchema)) },
+        },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -622,17 +809,25 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        sessionId: cuidSchema.openapi({ param: { name: "sessionId", in: "path" }, description: "ID sesi" }),
+        sessionId: cuidSchema.openapi({
+          param: { name: "sessionId", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(messageSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(messageSchema)) },
+        },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -656,11 +851,13 @@ swaggerApp.openapi(
               questionId: cuidSchema,
               subTurn: z.number().int().min(0).max(2).default(0).openapi({
                 example: 0,
-                description: "0 = jawaban utama | 1 = sanggahan pertama | 2 = sanggahan kedua",
+                description:
+                  "0 = jawaban utama | 1 = sanggahan pertama | 2 = sanggahan kedua",
               }),
               role: z.enum(["USER", "AI"]).openapi({ example: "USER" }),
               content: z.string().openapi({
-                example: "Variabel independen dalam penelitian ini adalah intensitas penggunaan media sosial.",
+                example:
+                  "Variabel independen dalam penelitian ini adalah intensitas penggunaan media sosial.",
               }),
             }),
           },
@@ -676,7 +873,7 @@ swaggerApp.openapi(
               z.object({
                 message: messageSchema,
                 evaluation: evaluationResultSchema.nullable(),
-              })
+              }),
             ),
           },
         },
@@ -686,7 +883,7 @@ swaggerApp.openapi(
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -702,17 +899,25 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        sessionId: cuidSchema.openapi({ param: { name: "sessionId", in: "path" }, description: "ID sesi" }),
+        sessionId: cuidSchema.openapi({
+          param: { name: "sessionId", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(z.array(answerScoreSchema)) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(z.array(answerScoreSchema)) },
+        },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );
 
 swaggerApp.openapi(
@@ -733,24 +938,46 @@ swaggerApp.openapi(
             schema: z.object({
               sessionId: cuidSchema,
               questionId: cuidSchema,
-              methodologyScore: z.number().int().min(1).max(5).openapi({ example: 4 }),
-              theoryScore: z.number().int().min(1).max(5).openapi({ example: 3 }),
-              argumentScore: z.number().int().min(1).max(5).openapi({ example: 4 }),
+              methodologyScore: z
+                .number()
+                .int()
+                .min(1)
+                .max(5)
+                .openapi({ example: 4 }),
+              theoryScore: z
+                .number()
+                .int()
+                .min(1)
+                .max(5)
+                .openapi({ example: 3 }),
+              argumentScore: z
+                .number()
+                .int()
+                .min(1)
+                .max(5)
+                .openapi({ example: 4 }),
               isSatisfied: z.boolean().openapi({ example: true }),
-              rebuttal: z.string().nullable().optional().openapi({ example: null }),
+              rebuttal: z
+                .string()
+                .nullable()
+                .optional()
+                .openapi({ example: null }),
             }),
           },
         },
       },
     },
     responses: {
-      201: { description: "Skor berhasil dibuat", content: { "application/json": { schema: success(answerScoreSchema) } } },
+      201: {
+        description: "Skor berhasil dibuat",
+        content: { "application/json": { schema: success(answerScoreSchema) } },
+      },
       400: err("Field tidak lengkap"),
       401: err("Tidak ada session aktif"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 201)
+  (c) => c.json({} as never, 201),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -771,16 +998,24 @@ swaggerApp.openapi(
     security: [{ cookieAuth: [] }],
     request: {
       params: z.object({
-        sessionId: cuidSchema.openapi({ param: { name: "sessionId", in: "path" }, description: "ID sesi" }),
+        sessionId: cuidSchema.openapi({
+          param: { name: "sessionId", in: "path" },
+          description: "ID sesi",
+        }),
       }),
     },
     responses: {
-      200: { description: "OK", content: { "application/json": { schema: success(evaluationReportSchema) } } },
+      200: {
+        description: "OK",
+        content: {
+          "application/json": { schema: success(evaluationReportSchema) },
+        },
+      },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),
       404: err("Sesi tidak ditemukan"),
       500: err("Internal Server Error"),
     },
   }),
-  (c) => c.json({} as never, 200)
+  (c) => c.json({} as never, 200),
 );

@@ -12,5 +12,6 @@ To run:
 bun run dev
 ```
 
-open http://localhost:3000
-swagger docs http://localhost:3000/docs
+open http://localhost:3001
+
+swagger docs http://localhost:3001/docs
