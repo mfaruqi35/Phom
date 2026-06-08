@@ -131,6 +131,7 @@ model AnswerScore {
   argumentScore    Int
   isSatisfied      Boolean
   rebuttal         String?
+  feedback         String?
   createdAt        DateTime @default(now())
 
   session  SimulationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)

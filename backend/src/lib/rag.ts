@@ -54,5 +54,6 @@ export const ragApi = {
         argument_strength: number;
       };
       rebuttal: string | null;
+      feedback: string | null;
     }>(),
 };

@@ -53,6 +53,7 @@ export const createMessageService = async (data: CreateMessageInput) => {
           argumentScore: evaluation.scores.argument_strength,
           isSatisfied: evaluation.is_satisfied,
           rebuttal: evaluation.rebuttal ?? null,
+          feedback: evaluation.feedback ?? null,
         },
       });
 

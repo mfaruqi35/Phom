@@ -67,3 +67,9 @@ export const completeSessionService = async (id: string) => {
     },
   });
 };
+
+export const deleteSessionService = async (id: string) => {
+  return prisma.session.delete({
+    where: { id },
+  });
+};
