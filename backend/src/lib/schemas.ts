@@ -144,6 +144,7 @@ export const evaluationResultSchema = z
       argument_strength: z.number().openapi({ example: 4 }),
     }),
     rebuttal: z.string().nullable().openapi({ example: null }),
+    feedback: z.string().nullable().openapi({ example: null }),
   })
   .openapi("EvaluationResult");
 
@@ -159,6 +160,7 @@ export const answerScoreSchema = z
     argumentScore: z.number().int().min(1).max(5).openapi({ example: 4 }),
     isSatisfied: z.boolean().openapi({ example: true }),
     rebuttal: z.string().nullable().openapi({ example: null }),
+    feedback: z.string().nullable().openapi({ example: null }),
     createdAt: z
       .string()
       .datetime()
@@ -179,6 +181,7 @@ export const questionReviewSchema = z
       .openapi({ example: "Variabel independen adalah..." }),
     isSatisfied: z.boolean().openapi({ example: true }),
     rebuttal: z.string().nullable().openapi({ example: null }),
+    feedback: z.string().nullable().openapi({ example: null }),
     scores: z.object({
       methodology: z.number().openapi({ example: 4 }),
       theory: z.number().openapi({ example: 3 }),

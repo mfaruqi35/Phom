@@ -61,6 +61,7 @@ export const getEvaluationService = async (sessionId: string) => {
       userAnswer: userMessage?.content ?? null,
       isSatisfied: score.isSatisfied,
       rebuttal: score.rebuttal,
+      feedback: score.feedback,
       scores: {
         methodology: score.methodologyScore,
         theory: score.theoryScore,

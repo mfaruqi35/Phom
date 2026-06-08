@@ -1,9 +1,11 @@
 import { Context } from "hono";
+import { prisma } from "../lib/prisma";
 import {
   createSessionService,
   getSessionService,
   getUserSessionsService,
   completeSessionService,
+  deleteSessionService,
 } from "../services/sessions";
 
 export const createSession = async (c: Context) => {
@@ -38,11 +40,18 @@ export const createSession = async (c: Context) => {
 
     const user = c.get("user");
     const userId = user.id;
+    const document = await prisma.document.findUnique({
+      where: { id: body.documentId },
+      select: { title: true },
+    });
+
+    const title = body.title || document?.title || "Sesi Simulasi";
     const session = await createSessionService({
       userId,
       documentId: body.documentId,
       mode: body.mode,
       chapterIds: body.chapterIds,
+      title,
     });
 
     return c.json({ success: true, data: session }, 201);
@@ -145,6 +154,41 @@ export const completeSession = async (c: Context) => {
     }
     const session = await completeSessionService(id);
     return c.json({ success: true, data: session });
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        success: false,
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred.",
+        },
+      },
+      500,
+    );
+  }
+};
+
+export const deleteSession = async (c: Context) => {
+  try {
+    const id = c.req.param("id");
+    if (!id) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "MISSING_PARAM",
+            message: "Session ID is required.",
+          },
+        },
+        400,
+      );
+    }
+    await deleteSessionService(id);
+    return c.json({
+      success: true,
+      data: null,
+    });
   } catch (error) {
     console.error(error);
     return c.json(
