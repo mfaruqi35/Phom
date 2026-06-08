@@ -2,3 +2,4 @@
 rag-service/venv/
 rag-service/__pycache__/
 rag-service/**/__pycache__/
+node_modules/
