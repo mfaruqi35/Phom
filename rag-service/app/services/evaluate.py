@@ -23,19 +23,19 @@ Skor menggunakan skala 1-5:
 - 4: Baik
 - 5: Sangat baik
 
+ATURAN WAJIB:
+- Jika is_satisfied TRUE: rebuttal HARUS null, feedback HARUS null
+- Jika is_satisfied FALSE: rebuttal WAJIB berupa kalimat tanya sebagai sanggahan penguji, feedback WAJIB berupa penjelasan singkat kekurangan jawaban
+
 Respond ONLY with a JSON object in this exact format, nothing else:
-{
-  "is_satisfied": true/false,
-  "scores": {
-    "methodology": 1-5,
-    "theory": 1-5,
-    "argument_strength": 1-5
-  },
-  "rebuttal": "sanggahan jika is_satisfied false, null jika true"
-}
+Jika is_satisfied TRUE, respond dengan format ini:
+{"is_satisfied": true, "scores": {"methodology": X, "theory": X, "argument_strength": X}, "rebuttal": null, "feedback": null}
+
+Jika is_satisfied FALSE, respond dengan format ini (rebuttal dan feedback TIDAK BOLEH null):
+{"is_satisfied": false, "scores": {"methodology": X, "theory": X, "argument_strength": X}, "rebuttal": "kalimat tanya sebagai sanggahan penguji sidang", "feedback": "penjelasan singkat kekurangan jawaban untuk laporan evaluasi"}
+
 
 is_satisfied adalah true jika rata-rata skor >= 3."""
-
     user = f"""Konteks dari skripsi:
 {context}
 

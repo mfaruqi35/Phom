@@ -22,6 +22,7 @@ def evaluate(request: EvaluateRequest):
                 argument_strength=result["scores"]["argument_strength"],
             ),
             rebuttal=result.get("rebuttal"),
+            feedback=result.get("feedback"),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
