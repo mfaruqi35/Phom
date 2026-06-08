@@ -294,54 +294,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Statistics Grid Widgets */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto w-full animate-title">
-          
-          {/* Stat 1 */}
-          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-[#3525cd] flex-shrink-0">
-              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
-            </div>
-            <div>
-              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Total Simulasi</p>
-              <p className="text-xs font-extrabold text-[#0B1C30]">12 Sesi Selesai</p>
-            </div>
-          </div>
 
-          {/* Stat 2 */}
-          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 flex-shrink-0">
-              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>analytics</span>
-            </div>
-            <div>
-              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Rata-rata Skor</p>
-              <p className="text-xs font-extrabold text-[#0B1C30]">78.4 / 100</p>
-            </div>
-          </div>
-
-          {/* Stat 3 */}
-          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 flex-shrink-0">
-              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
-            </div>
-            <div>
-              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Waktu Latihan</p>
-              <p className="text-xs font-extrabold text-[#0B1C30]">4.5 Jam</p>
-            </div>
-          </div>
-
-          {/* Stat 4 */}
-          <div className="bg-white border border-[#C7C4D8]/50 p-4 rounded-2xl shadow-sm flex items-center gap-3 hover:scale-[1.01] transition-transform duration-200">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0">
-              <span className="material-symbols-outlined text-base font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-            </div>
-            <div>
-              <p className="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Kategori Layak</p>
-              <p className="text-xs font-extrabold text-emerald-600">Sangat Layak (B+)</p>
-            </div>
-          </div>
-
-        </div>
 
         {/* 1. Centered Processing Status Zone / Dropzone */}
         <div className="w-full max-w-4xl mx-auto animate-card-1">

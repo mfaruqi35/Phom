@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-type UserRole = "mahasiswa" | "dosen" | "admin" | "";
+type UserRole = "user";
 
 // Helper sliding auth card modal component
 interface SlidingAuthCardProps {
@@ -31,7 +31,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
-  const [signUpRole, setSignUpRole] = useState<UserRole>("mahasiswa");
+  const [signUpRole, setSignUpRole] = useState<UserRole>("user");
   const [signUpIdentifier, setSignUpIdentifier] = useState("");
 
   const [error, setError] = useState("");
@@ -145,7 +145,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
           transform: ${isSignUp ? "translateX(-100%)" : "translateX(0)"};
         }
         .overlay {
-          background-image: url('https://media.giphy.com/media/l0HlMgBCA1f5hDkK4/giphy.gif');
+          background-image: url('/bg.gif');
           background-size: cover;
           background-position: center;
           position: relative;
@@ -191,36 +191,8 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
             <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">Sign In</h1>
             <p className="text-xs text-gray-400">Masuk untuk melanjutkan uji coba sidang</p>
           </div>
-          
-          {/* Social icons */}
-          <div className="flex justify-center gap-3">
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
-              </svg>
-            </button>
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-              </svg>
-            </button>
-          </div>
 
-          <p className="text-[10px] text-gray-400">or use your account</p>
+          {/* Social login removed, only email/password or Google direct */}
 
           {/* Error alert */}
           {error && !isSignUp && (
@@ -242,7 +214,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
                 className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
               />
             </div>
-            
+
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">lock</span>
               <input
@@ -279,7 +251,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
             {isLoading ? "Signing In..." : "SIGN IN"}
           </button>
 
-          {/* Demo Bypass Option */}
+          {/* Google Sign In Option */}
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-gray-200/60"></div>
             <span className="flex-shrink mx-4 text-gray-400 text-[10px] uppercase font-bold tracking-wider">atau</span>
@@ -289,51 +261,21 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
             type="button"
             onClick={handleDemoBypass}
             disabled={isLoading}
-            className="w-full h-11 rounded-xl border border-indigo-200 hover:border-primary bg-indigo-50/20 hover:bg-indigo-50/50 text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
           >
-            <span className="material-symbols-outlined text-sm font-bold">bolt</span>
-            Coba Demo Instan (Tanpa Daftar)
+            <i className="fa-brands fa-google text-[#EA4335] text-sm flex-shrink-0"></i>
+            <span>Masuk dengan Google</span>
           </button>
         </form>
       </div>
 
       {/* SIGN UP (REGISTER) FORM PANEL */}
       <div className="form-container sign-up-container flex flex-col justify-center px-10 md:px-14 py-8">
-        <form onSubmit={handleSignUpSubmit} className="space-y-4 text-center overflow-y-auto max-h-[560px] px-1 scrollbar-thin">
+        <form onSubmit={handleSignUpSubmit} className="space-y-4 text-center">
           <div className="space-y-1.5">
             <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">Create Account</h1>
             <p className="text-xs text-gray-400">Buat akun untuk memulai simulasi baru</p>
           </div>
-
-          {/* Social icons */}
-          <div className="flex justify-center gap-3">
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(24,119,242,0.3)] hover:rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#EA4335] hover:border-[#EA4335] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(234,67,53,0.3)] hover:-rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 12.24 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.746-.08-1.32-.176-1.884H12.24z"/>
-              </svg>
-            </button>
-            <button
-              type="button"
-              className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] hover:scale-110 active:scale-95 transition-all duration-300 hover:shadow-[0_4px_12px_rgba(0,119,181,0.3)] hover:rotate-3"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-              </svg>
-            </button>
-          </div>
-
-          <p className="text-[10px] text-gray-400">or use your email for registration</p>
 
           {/* Alerts */}
           {success && isSignUp && (
@@ -409,7 +351,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
             {isLoading ? "Creating Account..." : "SIGN UP"}
           </button>
 
-          {/* Demo Bypass Option */}
+          {/* Google Sign In Option */}
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-gray-200/60"></div>
             <span className="flex-shrink mx-4 text-gray-400 text-[10px] uppercase font-bold tracking-wider">atau</span>
@@ -419,10 +361,10 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
             type="button"
             onClick={handleDemoBypass}
             disabled={isLoading}
-            className="w-full h-11 rounded-xl border border-indigo-200 hover:border-primary bg-indigo-50/20 hover:bg-indigo-50/50 text-primary text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
           >
-            <span className="material-symbols-outlined text-sm font-bold">bolt</span>
-            Coba Demo Instan (Tanpa Daftar)
+            <i className="fa-brands fa-google text-[#EA4335] text-sm flex-shrink-0"></i>
+            <span>Masuk dengan Google</span>
           </button>
         </form>
       </div>
@@ -430,7 +372,7 @@ function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
       {/* SLIDING OVERLAY PANEL WITH CONNECTIVITY GIF */}
       <div className="overlay-container">
         <div className="overlay">
-          
+
           {/* Dark gradient overlay for readability */}
           <div className="overlay-tint"></div>
 
@@ -474,7 +416,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("methodology");
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Modal Popup states
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -514,18 +456,16 @@ export default function Home() {
   return (
     <>
       {/* Main Page Container (Gets blurred when modal is open) */}
-      <div 
-        className={`relative min-h-screen bg-bg text-text-primary antialiased font-body transition-all duration-300 ${
-          authModalOpen ? "filter blur-md pointer-events-none" : ""
-        }`}
+      <div
+        className={`relative min-h-screen bg-bg text-text-primary antialiased font-body transition-all duration-300 ${authModalOpen ? "filter blur-md pointer-events-none" : ""
+          }`}
       >
         {/* TopNavBar */}
         <nav
-          className={`fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] z-50 transition-all duration-300 ${
-            scrolled
+          className={`fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[1200px] z-50 transition-all duration-300 ${scrolled
               ? "bg-white/95 backdrop-blur-md shadow-[0_12px_40px_-12px_rgba(79,70,229,0.15)] border border-gray-100 py-3 px-6 rounded-full"
               : "bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-200/40 py-4.5 px-8 rounded-full"
-          }`}
+            }`}
         >
           <div className="flex justify-between items-center w-full">
             {/* Brand Logo */}
@@ -685,7 +625,7 @@ export default function Home() {
 
         {/* Main Content */}
         <main className="pt-28 pb-20">
-          
+
           {/* Hero Section */}
           <section className="max-w-[1280px] mx-auto px-6 md:px-12 pt-12 md:pt-20 pb-20 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -725,7 +665,7 @@ export default function Home() {
                     Lihat Cara Kerja
                   </a>
                 </div>
-                
+
                 {/* Social Proof */}
                 <div className="flex items-center gap-4 mt-6">
                   <div className="flex -space-x-3">
@@ -752,7 +692,7 @@ export default function Home() {
               <div className="relative z-0 h-[450px] w-full hidden lg:block">
                 {/* Glowing Decorative Background */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/10 rounded-full blur-[80px] -z-10"></div>
-                
+
                 <div className="absolute right-0 top-6 w-[110%] h-full rounded-2xl border border-border/80 shadow-2xl overflow-hidden glass-panel transform -rotate-1 hover:rotate-0 transition-transform duration-700 ease-out origin-bottom-right">
                   {/* Browser Header */}
                   <div className="h-11 bg-surface-raised border-b border-border/60 flex items-center px-4 gap-2">
@@ -776,7 +716,7 @@ export default function Home() {
                         <div className="h-2 w-full bg-primary-subtle rounded border border-primary/10"></div>
                         <div className="h-2 w-4/5 bg-slate-200 rounded"></div>
                       </div>
-                      
+
                       <div className="mt-auto h-20 w-full rounded-md bg-accent-subtle border border-accent/20 p-2.5 flex flex-col justify-end">
                         <div className="h-3 w-3/4 bg-accent/70 rounded mb-2"></div>
                         <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -897,7 +837,7 @@ export default function Home() {
                 AI canggih kami membedah naskah skripsi Anda secara semantik untuk memproyeksikan daftar pertanyaan tersulit yang paling mungkin diajukan dosen penguji.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Card 1 */}
               <div className="bg-surface rounded-xl p-8 border border-border card-hover group relative overflow-hidden shadow-sm">
@@ -910,18 +850,10 @@ export default function Home() {
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
                   AI Committee Simulation
                 </h3>
-                <p className="font-body text-sm text-text-secondary mb-6 leading-relaxed">
+                <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
                   Uji kemampuan akademismu melawan berbagai tipe penguji AI—mulai dari yang membimbing secara konstruktif hingga yang agresif menguji detail riset Anda.
                 </p>
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center gap-1 font-heading text-xs font-bold text-primary group-hover:text-primary-hover transition-colors"
-                >
-                  Selengkapnya{" "}
-                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
-                    arrow_right_alt
-                  </span>
-                </a>
+
               </div>
 
               {/* Card 2 */}
@@ -935,18 +867,9 @@ export default function Home() {
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
                   Deep Scrutiny
                 </h3>
-                <p className="font-body text-sm text-text-secondary mb-6 leading-relaxed">
+                <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
                   Analisis mendalam otomatis untuk memetakan kelemahan teori, kontradiksi hasil Bab 4, hingga validitas data sampel. Tidak ada celah yang terlewat.
                 </p>
-                <a
-                  href="#solutions"
-                  className="inline-flex items-center gap-1 font-heading text-xs font-bold text-accent group-hover:text-accent-hover transition-colors"
-                >
-                  Selengkapnya{" "}
-                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
-                    arrow_right_alt
-                  </span>
-                </a>
               </div>
 
               {/* Card 3 */}
@@ -960,18 +883,9 @@ export default function Home() {
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
                   Confidence Scoring
                 </h3>
-                <p className="font-body text-sm text-text-secondary mb-6 leading-relaxed">
+                <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
                   Pantau grafik kesiapan sidangmu dari waktu ke waktu dengan skor kuantitatif 0-100 di tiga aspek: Metodologi, Teori, dan Ketahanan Argumentasi.
                 </p>
-                <a
-                  href="#solutions"
-                  className="inline-flex items-center gap-1 font-heading text-xs font-bold text-success hover:text-success-subtle transition-colors"
-                >
-                  Selengkapnya{" "}
-                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
-                    arrow_right_alt
-                  </span>
-                </a>
               </div>
             </div>
           </section>
@@ -1075,31 +989,28 @@ export default function Home() {
               <div className="flex gap-8">
                 <button
                   onClick={() => setActiveTab("methodology")}
-                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${
-                    activeTab === "methodology"
+                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${activeTab === "methodology"
                       ? "border-b-2 border-primary text-primary"
                       : "text-text-secondary hover:text-text-primary"
-                  }`}
+                    }`}
                 >
                   Methodology Stress-Test
                 </button>
                 <button
                   onClick={() => setActiveTab("theory")}
-                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${
-                    activeTab === "theory"
+                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${activeTab === "theory"
                       ? "border-b-2 border-primary text-primary"
                       : "text-text-secondary hover:text-text-primary"
-                  }`}
+                    }`}
                 >
                   Theoretical Foundation
                 </button>
                 <button
                   onClick={() => setActiveTab("argument")}
-                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${
-                    activeTab === "argument"
+                  className={`pb-4 text-sm font-bold tracking-wide transition-all ${activeTab === "argument"
                       ? "border-b-2 border-primary text-primary"
                       : "text-text-secondary hover:text-text-primary"
-                  }`}
+                    }`}
                 >
                   Argument Weakness
                 </button>
@@ -1346,9 +1257,8 @@ export default function Home() {
                   </span>
                 </button>
                 <div
-                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFaq === 0 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${activeFaq === 0 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    }`}
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
                     Ya, keamanan data adalah prioritas utama kami. Semua berkas yang Anda unggah dienkripsi secara penuh di penyimpanan Supabase Storage pribadi. Naskah Anda tidak akan dipublikasikan secara umum dan tidak digunakan untuk melatih model publik.
@@ -1369,9 +1279,8 @@ export default function Home() {
                   </span>
                 </button>
                 <div
-                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFaq === 1 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${activeFaq === 1 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    }`}
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
                     Saat ini Phom mendukung berkas dengan format PDF dan naskah dokumen dengan ukuran maksimal sebesar 25 MB per dokumen. Kami merekomendasikan dokumen PDF yang sudah diparse secara teks (bukan hasil scan gambar kasar) untuk hasil pemetaan terbaik.
@@ -1392,9 +1301,8 @@ export default function Home() {
                   </span>
                 </button>
                 <div
-                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFaq === 2 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${activeFaq === 2 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    }`}
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
                     Tentu! Pada bagian dashboard simulator, Anda dapat memilih fokus bab secara spesifik menggunakan pill selector. Anda bisa memilih Bab 3 saja untuk fokus mematangkan metodologi, atau memilih beberapa bab sekaligus sesuai kebutuhan.
@@ -1415,9 +1323,8 @@ export default function Home() {
                   </span>
                 </button>
                 <div
-                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                    activeFaq === 3 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${activeFaq === 3 ? "max-h-40 pb-5 opacity-100" : "max-h-0 opacity-0"
+                    }`}
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
                     Kami menyediakan 3 tingkatan intensitas simulasi: **Quick Review** (sidang cepat 3-5 pertanyaan untuk evaluasi kasar), **Standard Exam** (sidang normal 8-10 pertanyaan), dan **Deep Drill** (sidang komprehensif 12-15 pertanyaan untuk membongkar detail riset terkecil).
@@ -1432,7 +1339,7 @@ export default function Home() {
             <div className="bg-primary rounded-2xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-xl shadow-primary/20">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-subtle/20 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2"></div>
-              
+
               <div className="relative z-10 max-w-xl text-center md:text-left">
                 <h2 className="font-heading text-3xl font-extrabold text-white mb-4">
                   Don't Leave Your Success to Chance
@@ -1441,7 +1348,7 @@ export default function Home() {
                   Gabung bersama ribuan mahasiswa sukses lainnya yang menghadapi sidang skripsi mereka dengan keyakinan akademis yang matang.
                 </p>
               </div>
-              
+
               <div className="relative z-10 flex flex-col items-center md:items-end gap-3 flex-shrink-0">
                 <button
                   onClick={() => openAuthModal("signup")}
@@ -1555,11 +1462,10 @@ export default function Home() {
 
       {/* 5. SLIDING AUTH MODAL POPUP (NOT BLURRED) */}
       {authModalOpen && (
-        <div 
+        <div
           onClick={closeAuthModal}
-          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${
-            isClosing ? "modal-backdrop-closing" : "modal-backdrop-animated"
-          }`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${isClosing ? "modal-backdrop-closing" : "modal-backdrop-animated"
+            }`}
         >
           <style jsx global>{`
             @keyframes modalFadeIn {
@@ -1592,13 +1498,12 @@ export default function Home() {
             }
           `}</style>
           {/* Modal Container Card with Close Button */}
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
-            className={`relative ${
-              isClosing ? "modal-card-closing" : "modal-card-animated"
-            }`}
+            className={`relative ${isClosing ? "modal-card-closing" : "modal-card-animated"
+              }`}
           >
-            
+
             {/* Circular Close Button at Top-Right */}
             <button
               onClick={closeAuthModal}
@@ -1609,9 +1514,9 @@ export default function Home() {
             </button>
 
             {/* Sliding Auth Card Component */}
-            <SlidingAuthCard 
-              initialMode={authMode} 
-              onClose={closeAuthModal} 
+            <SlidingAuthCard
+              initialMode={authMode}
+              onClose={closeAuthModal}
             />
 
           </div>
