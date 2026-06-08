@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 type UserRole = "user";
 
@@ -10,7 +11,10 @@ interface SlidingAuthCardProps {
   onClose: () => void;
 }
 
-export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCardProps) {
+export default function SlidingAuthCard({
+  initialMode,
+  onClose,
+}: SlidingAuthCardProps) {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
 
@@ -35,7 +39,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -45,15 +49,33 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onClose();
-      router.push("/dashboard");
-    }, 1000);
+    await authClient.signIn.email(
+      {
+        email: signInEmail,
+        password: signInPassword,
+        rememberMe: signInRemember,
+      },
+      {
+        onRequest: () => {
+          setIsLoading(true);
+        },
+        onSuccess: () => {
+          setIsLoading(false);
+          setSuccess("Masuk berhasil! Mengalihkan...");
+          setTimeout(() => {
+            onClose();
+            router.push("/dashboard");
+          }, 800);
+        },
+        onError: (ctx) => {
+          setIsLoading(false);
+          setError(ctx.error.message || "Gagal masuk. Silakan periksa kembali email dan password Anda.");
+        },
+      }
+    );
   };
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -62,8 +84,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
       !signUpName ||
       !signUpEmail ||
       !signUpPassword ||
-      !signUpConfirmPassword ||
-      !signUpRole
+      !signUpConfirmPassword
     ) {
       setError("Semua kolom input pendaftaran wajib diisi.");
       return;
@@ -79,26 +100,45 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setSuccess("Registrasi berhasil! Mengalihkan...");
-      setTimeout(() => {
-        onClose();
-        router.push("/dashboard");
-      }, 1000);
-    }, 1000);
+    await authClient.signUp.email(
+      {
+        email: signUpEmail,
+        password: signUpPassword,
+        name: signUpName,
+      },
+      {
+        onRequest: () => {
+          setIsLoading(true);
+        },
+        onSuccess: () => {
+          setIsLoading(false);
+          setSuccess("Pendaftaran berhasil! Mengalihkan...");
+          setTimeout(() => {
+            onClose();
+            router.push("/dashboard");
+          }, 1000);
+        },
+        onError: (ctx) => {
+          setIsLoading(false);
+          setError(ctx.error.message || "Gagal mendaftar. Silakan coba lagi.");
+        },
+      }
+    );
   };
 
-  const handleDemoBypass = () => {
+  const handleGoogleSignIn = async () => {
     setError("");
     setSuccess("");
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch (err: any) {
       setIsLoading(false);
-      onClose();
-      router.push("/dashboard");
-    }, 1000);
+      setError(err.message || "Gagal masuk dengan Google.");
+    }
   };
 
   return (
@@ -216,7 +256,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
               </span>
               <input
                 type="email"
-                placeholder="Email Address"
+                placeholder="Alamat Email"
                 value={signInEmail}
                 onChange={(e) => setSignInEmail(e.target.value)}
                 required
@@ -248,13 +288,13 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
                 onChange={(e) => setSignInRemember(e.target.checked)}
                 className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20 accent-primary"
               />
-              <span>Remember me</span>
+              <span>Ingat saya</span>
             </label>
             <a
               href="#"
               className="hover:underline hover:text-primary transition-colors"
             >
-              Forgot password?
+              Lupa password?
             </a>
           </div>
 
@@ -264,7 +304,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
             disabled={isLoading}
             className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
           >
-            {isLoading ? "Signing In..." : "SIGN IN"}
+            {isLoading ? "Sedang Masuk..." : "MASUK"}
           </button>
 
           {/* Google Sign In Option */}
@@ -277,7 +317,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
           </div>
           <button
             type="button"
-            onClick={handleDemoBypass}
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
             className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
           >
@@ -292,7 +332,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
         <form onSubmit={handleSignUpSubmit} className="space-y-4 text-center">
           <div className="space-y-1.5">
             <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">
-              Create Account
+              Buat Akun
             </h1>
             <p className="text-xs text-gray-400">
               Buat akun untuk memulai simulasi baru
@@ -319,7 +359,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
               </span>
               <input
                 type="text"
-                placeholder="Full Name"
+                placeholder="Nama Lengkap"
                 value={signUpName}
                 onChange={(e) => setSignUpName(e.target.value)}
                 required
@@ -333,7 +373,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
               </span>
               <input
                 type="email"
-                placeholder="Email Address"
+                placeholder="Email"
                 value={signUpEmail}
                 onChange={(e) => setSignUpEmail(e.target.value)}
                 required
@@ -361,7 +401,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
               </span>
               <input
                 type="password"
-                placeholder="Confirm Password"
+                placeholder="Konfirmasi Password"
                 value={signUpConfirmPassword}
                 onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                 required
@@ -376,7 +416,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
             disabled={isLoading}
             className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-3"
           >
-            {isLoading ? "Creating Account..." : "SIGN UP"}
+            {isLoading ? "Membuat Akun..." : "DAFTAR"}
           </button>
 
           {/* Google Sign In Option */}
@@ -389,7 +429,7 @@ export default function SlidingAuthCard({ initialMode, onClose }: SlidingAuthCar
           </div>
           <button
             type="button"
-            onClick={handleDemoBypass}
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
             className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
           >
