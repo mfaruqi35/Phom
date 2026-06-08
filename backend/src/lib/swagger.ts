@@ -363,7 +363,6 @@ swaggerApp.openapi(
                 description:
                   "File PDF skripsi (max sesuai konfigurasi Supabase Storage)",
               }),
-              title: z.string().openapi({ example: "Skripsi Analisis Sistem" }),
             }),
           },
         },
@@ -704,6 +703,40 @@ swaggerApp.openapi(
       200: {
         description: "OK",
         content: { "application/json": { schema: success(sessionSchema) } },
+      },
+      400: err("ID sesi tidak ada di path"),
+      401: err("Tidak ada session aktif"),
+      500: err("Internal Server Error"),
+    },
+  }),
+  (c) => c.json({} as never, 200),
+);
+
+swaggerApp.openapi(
+  createRoute({
+    tags: ["Sessions"],
+    method: "delete",
+    path: "/api/sessions/{id}",
+    summary: "Hapus sesi simulasi",
+    description:
+      "Menghapus sesi simulasi beserta semua pertanyaan, pesan, dan skor yang berkaitan.",
+    security: [{ cookieAuth: [] }],
+    request: {
+      params: z.object({
+        id: cuidSchema.openapi({
+          param: { name: "id", in: "path" },
+          description: "ID sesi",
+        }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Sesi berhasil dihapus",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(true), data: z.null() }),
+          },
+        },
       },
       400: err("ID sesi tidak ada di path"),
       401: err("Tidak ada session aktif"),

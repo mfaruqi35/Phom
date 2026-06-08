@@ -191,14 +191,13 @@ null
 
 ### `POST /api/documents`
 
-Upload dokumen PDF skripsi baru. Menggunakan `multipart/form-data`.
+Upload dokumen PDF skripsi baru. Menggunakan `multipart/form-data`. Judul dokumen otomatis diambil dari nama file PDF (tanpa ekstensi `.pdf`).
 
 **Request** — `Content-Type: multipart/form-data`
 
 | Field | Type | Keterangan |
 | ----- | ---- | ---------- |
 | `file` | `File` | File PDF yang akan diupload |
-| `title` | `string` | Judul dokumen |
 
 **201 Created**
 
@@ -224,7 +223,7 @@ Upload dokumen PDF skripsi baru. Menggunakan `multipart/form-data`.
   "success": false,
   "error": {
     "code": "MISSING_FIELDS",
-    "message": "File and title are required."
+    "message": "File is required."
   }
 }
 ```
@@ -833,6 +832,51 @@ Menandai sesi sebagai selesai. Di-trigger saat user menekan tombol "End Session"
     "isCompleted": true,
     "completedAt": "2026-06-06T11:30:00.000Z"
   }
+}
+```
+
+**400 Bad Request**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "MISSING_PARAM",
+    "message": "Session ID is required."
+  }
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INTERNAL_SERVER_ERROR",
+    "message": "An unexpected error occurred."
+  }
+}
+```
+
+---
+
+### `DELETE /api/sessions/:id`
+
+Menghapus sesi simulasi beserta semua data pertanyaan, pesan chat, dan skor penilaian yang berkaitan dengan sesi tersebut.
+
+**Path Parameter**
+
+| Param | Type | Keterangan |
+| ----- | ---- | ---------- |
+| `id` | `string` | ID sesi |
+
+**200 OK**
+
+```json
+{
+  "success": true,
+  "data": null
 }
 ```
 
