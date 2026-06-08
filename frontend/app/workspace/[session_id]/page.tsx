@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 interface Message {
   id: string;
@@ -11,10 +12,24 @@ interface Message {
   timestamp: Date;
 }
 
+const getUserInitials = (name?: string) => {
+  if (!name) return "US";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 export default function WorkspacePage() {
   const params = useParams();
   const router = useRouter();
   const sessionId = params.session_id as string;
+
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
+  const [docTitle, setDocTitle] = useState<string>("Full_Thesis_Final_Draft.pdf");
+  const [sessionData, setSessionData] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -54,70 +69,265 @@ export default function WorkspacePage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+  // Set document title
+  useEffect(() => {
+    document.title = `${docTitle} - Workspace Simulator | Phom`;
+  }, [docTitle]);
 
-    // 1. Add user answer
-    const userMsgId = `user-${Date.now()}`;
-    const userMsg: Message = {
-      id: userMsgId,
-      role: "USER",
-      content: inputText,
-      subTurn: subTurn,
-      timestamp: new Date(),
+  // Fetch session, questions, and messages on load
+  useEffect(() => {
+    if (!sessionId || sessionId === "mock-session") return;
+
+    const fetchWorkspaceData = async () => {
+      try {
+        // 1. Fetch Session Details
+        const sessionRes = await fetch(`http://localhost:3001/api/sessions/${sessionId}`, {
+          credentials: "include",
+        });
+        const sessionJson = await sessionRes.json();
+        if (sessionJson.success) {
+          setSessionData(sessionJson.data);
+          if (sessionJson.data.document?.title) {
+            setDocTitle(sessionJson.data.document.title);
+          }
+          if (sessionJson.data.totalQuestions) {
+            setTotalQuestions(sessionJson.data.totalQuestions);
+          }
+          if (sessionJson.data.currentStep) {
+            setCurrentStep(sessionJson.data.currentStep);
+          }
+        }
+
+        // 2. Fetch Questions
+        const questionsRes = await fetch(`http://localhost:3001/api/questions/${sessionId}`, {
+          credentials: "include",
+        });
+        const questionsJson = await questionsRes.json();
+        if (questionsJson.success) {
+          setQuestions(questionsJson.data);
+
+          // 3. Fetch Messages
+          const messagesRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+            credentials: "include",
+          });
+          const messagesJson = await messagesRes.json();
+          if (messagesJson.success) {
+            const fetchedMsgs = messagesJson.data;
+            if (fetchedMsgs.length > 0) {
+              setMessages(fetchedMsgs.map((m: any) => ({
+                id: m.id,
+                role: m.role,
+                content: m.content,
+                subTurn: m.subTurn,
+                timestamp: new Date(m.createdAt),
+              })));
+              
+              // Set subTurn to the last message's subTurn
+              const lastMsg = fetchedMsgs[fetchedMsgs.length - 1];
+              setSubTurn(lastMsg.subTurn);
+            } else if (questionsJson.data.length > 0) {
+              // Initialize chat with the first pre-generated question
+              const firstQuestion = questionsJson.data[0];
+              const initMsgRes = await fetch("http://localhost:3001/api/messages", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  sessionId,
+                  questionId: firstQuestion.id,
+                  role: "AI",
+                  content: firstQuestion.content,
+                  subTurn: 0,
+                }),
+                credentials: "include",
+              });
+              const initMsgJson = await initMsgRes.json();
+              if (initMsgJson.success) {
+                setMessages([{
+                  id: initMsgJson.data.message.id,
+                  role: "AI",
+                  content: firstQuestion.content,
+                  subTurn: 0,
+                  timestamp: new Date(),
+                }]);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load workspace data:", err);
+      }
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    fetchWorkspaceData();
+  }, [sessionId]);
+
+  const moveToNextQuestion = async () => {
+    const nextStep = currentStep + 1;
+    if (nextStep <= questions.length) {
+      setCurrentStep(nextStep);
+      setSubTurn(0);
+      const nextQuestion = questions[nextStep - 1];
+      
+      try {
+        const aiMsgRes = await fetch("http://localhost:3001/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            questionId: nextQuestion.id,
+            role: "AI",
+            content: nextQuestion.content,
+            subTurn: 0,
+          }),
+          credentials: "include",
+        });
+        const aiMsgJson = await aiMsgRes.json();
+        if (aiMsgJson.success) {
+          const refreshRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+            credentials: "include",
+          });
+          const refreshJson = await refreshRes.json();
+          if (refreshJson.success) {
+            setMessages(refreshJson.data.map((m: any) => ({
+              id: m.id,
+              role: m.role,
+              content: m.content,
+              subTurn: m.subTurn,
+              timestamp: new Date(m.createdAt),
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to post next question:", err);
+      }
+    } else {
+      try {
+        await fetch(`http://localhost:3001/api/sessions/${sessionId}/complete`, {
+          method: "PATCH",
+          credentials: "include",
+        });
+      } catch (e) {
+        console.error("Failed to complete session:", e);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim() || isTyping || !questions.length) return;
+
+    const currentQuestion = questions[currentStep - 1];
+    if (!currentQuestion) return;
+
+    const userText = inputText;
     setInputText("");
     setIsTyping(true);
 
-    // 2. Simulate AI response delay
-    setTimeout(() => {
-      setIsTyping(false);
-      
-      if (subTurn === 0) {
-        // First rebuttal (subTurn = 1)
-        setSubTurn(1);
-        const rebuttalMsg: Message = {
-          id: `ai-r1-${Date.now()}`,
-          role: "AI",
-          content:
-            "Jawaban Anda menekankan kedalaman informasi daripada keterwakilan statistik. Namun, salah satu kriteria informan Anda adalah lama bekerja minimal 5 tahun. Mengapa batas waktu 5 tahun ini kritikal? Apakah informan dengan masa kerja 3 tahun tidak dapat memberikan perspektif yang sama validnya?",
-          subTurn: 1,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, rebuttalMsg]);
-      } else if (subTurn === 1) {
-        // Second rebuttal (subTurn = 2)
-        setSubTurn(2);
-        const rebuttalMsg2: Message = {
-          id: `ai-r2-${Date.now()}`,
-          role: "AI",
-          content:
-            "Tetapi bagaimana Anda membuktikan bias subjektivitas Anda sebagai peneliti tidak memengaruhi proses penafsiran data kualitatif ini? Langkah verifikasi apa saja yang Anda lakukan?",
-          subTurn: 2,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, rebuttalMsg2]);
-      } else {
-        // Move to next question (subTurn resets to 0, currentStep increments)
-        setSubTurn(0);
-        setCurrentStep((prev) => Math.min(prev + 1, totalQuestions));
-        const nextQuestionMsg: Message = {
-          id: `ai-q2-${Date.now()}`,
-          role: "AI",
-          content:
-            "Baik, mari kita beralih ke Bab IV Hasil & Pembahasan. Temuan Anda di tabel 4.2 menunjukkan korelasi negatif yang tidak signifikan antara variabel X2 dan Y. Bagaimana Anda mencocokkan anomali data ini dengan teori utama dari grand theory di Bab II?",
-          subTurn: 0,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, nextQuestionMsg]);
+    const userMsgLocal: Message = {
+      id: `temp-user-${Date.now()}`,
+      role: "USER",
+      content: userText,
+      subTurn: subTurn,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMsgLocal]);
+
+    try {
+      const response = await fetch("http://localhost:3001/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId,
+          questionId: currentQuestion.id,
+          role: "USER",
+          content: userText,
+          subTurn: subTurn,
+        }),
+        credentials: "include",
+      });
+      const resJson = await response.json();
+
+      if (resJson.success) {
+        const messagesRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+          credentials: "include",
+        });
+        const messagesJson = await messagesRes.json();
+        if (messagesJson.success) {
+          setMessages(messagesJson.data.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            subTurn: m.subTurn,
+            timestamp: new Date(m.createdAt),
+          })));
+        }
+
+        const evaluation = resJson.data.evaluation;
+        if (evaluation) {
+          const isSatisfied = evaluation.is_satisfied !== undefined ? evaluation.is_satisfied : evaluation.isSatisfied;
+          if (!isSatisfied && subTurn < 2 && evaluation.rebuttal) {
+            const nextSubTurn = subTurn + 1;
+            setSubTurn(nextSubTurn);
+
+            const aiRebuttalRes = await fetch("http://localhost:3001/api/messages", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                sessionId,
+                questionId: currentQuestion.id,
+                role: "AI",
+                content: evaluation.rebuttal,
+                subTurn: nextSubTurn,
+              }),
+              credentials: "include",
+            });
+            const aiRebuttalJson = await aiRebuttalRes.json();
+            if (aiRebuttalJson.success) {
+              const refreshRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+                credentials: "include",
+              });
+              const refreshJson = await refreshRes.json();
+              if (refreshJson.success) {
+                setMessages(refreshJson.data.map((m: any) => ({
+                  id: m.id,
+                  role: m.role,
+                  content: m.content,
+                  subTurn: m.subTurn,
+                  timestamp: new Date(m.createdAt),
+                })));
+              }
+            }
+          } else {
+            await moveToNextQuestion();
+          }
+        } else {
+          await moveToNextQuestion();
+        }
       }
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
+    try {
+      await fetch(`http://localhost:3001/api/sessions/${sessionId}/complete`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error(e);
+    }
     router.push(`/evaluation/${sessionId || "mock-session"}`);
   };
 
@@ -126,13 +336,13 @@ export default function WorkspacePage() {
   const isEndEnabled = answeredCount >= 3;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col font-body relative overflow-hidden">
+    <div className="h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col font-body relative overflow-hidden">
       {/* Decorative Atmospheric Glows */}
       <div className="absolute top-[-20%] left-[30%] w-[600px] h-[600px] rounded-full bg-indigo-200/30 blur-[120px] pointer-events-none z-0" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
       {/* Top Workspace Header */}
-      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
+      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 flex-shrink-0 z-50 animate-header">
         <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-5">
             <a href="/dashboard" className="flex items-center gap-2 group">
@@ -157,31 +367,27 @@ export default function WorkspacePage() {
                 Dashboard
               </a>
               <span className="text-gray-200">|</span>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3525cd] animate-pulse"></span>
-                <span className="text-xs font-extrabold text-[#3525cd]">
-                  Simulasi Aktif: Bab III & IV
+              <div className="flex items-center gap-2 max-w-[200px] sm:max-w-[300px]">
+                <span className="w-2 h-2 rounded-full bg-[#3525cd] animate-pulse flex-shrink-0"></span>
+                <span className="text-xs font-extrabold text-[#3525cd] truncate" title={docTitle}>
+                  {docTitle}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Brand center/right */}
+          {/* Profile center/right */}
           <div className="flex items-center gap-4 relative" ref={dropdownRef}>
-            <div className="hidden md:flex items-center gap-2 text-[10px] text-[#3525cd] bg-indigo-50/50 px-3.5 py-1.5 rounded-full border border-indigo-100/50 font-bold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Connected to Examiner AI
-            </div>
-
             {/* User profile dropdown button */}
             <button 
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                AS
+                {getUserInitials(user?.name)}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                Dr. Aris Setiawan
+                {user?.name || "Dr. Aris Setiawan"}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -192,8 +398,12 @@ export default function WorkspacePage() {
             {profileDropdownOpen && (
               <div className="absolute right-0 top-full mt-2.5 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
                 <div className="px-3 py-2 border-b border-gray-50 mb-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
-                  <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                    {session ? "Akun Pengguna" : "Akun Demo"}
+                  </p>
+                  <p className="text-xs font-bold text-gray-800 truncate">
+                    {user?.email || "aris.setiawan@univ.ac.id"}
+                  </p>
                 </div>
                 <a 
                   href="/history" 
@@ -202,13 +412,16 @@ export default function WorkspacePage() {
                   <span className="material-symbols-outlined text-base">history</span>
                   Riwayat Sesi
                 </a>
-                <a 
-                  href="/" 
-                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+                <button 
+                  onClick={async () => {
+                    await authClient.signOut();
+                    router.push("/");
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all text-left"
                 >
                   <span className="material-symbols-outlined text-base">logout</span>
                   Keluar
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -216,7 +429,7 @@ export default function WorkspacePage() {
       </header>
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6 overflow-hidden h-[calc(100vh-100px)] z-10">
+      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6 overflow-hidden h-[calc(100vh-120px)] min-h-0 z-10">
         
         {/* Sidebar Panel */}
         <aside className="w-full md:w-68 flex-shrink-0 flex flex-col gap-6 bg-white border border-[#C7C4D8]/50 rounded-2xl p-6 shadow-sm justify-between md:h-full animate-card-1">
@@ -232,8 +445,20 @@ export default function WorkspacePage() {
                   <span className="material-symbols-outlined text-lg font-bold">school</span>
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-gray-800 block leading-tight">Standard Exam</span>
-                  <span className="text-[10px] text-gray-400">45 Min. Simulation</span>
+                  <span className="text-xs font-bold text-gray-800 block leading-tight">
+                    {sessionData?.mode === "QUICK"
+                      ? "Quick Review"
+                      : sessionData?.mode === "DEEP"
+                      ? "Deep Drill"
+                      : "Standard Exam"}
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-semibold">
+                    {sessionData?.mode === "QUICK"
+                      ? "3-5 Questions"
+                      : sessionData?.mode === "DEEP"
+                      ? "12-15 Questions"
+                      : "8-10 Questions"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -263,18 +488,29 @@ export default function WorkspacePage() {
                 TEST SCOPE
               </span>
               <div className="space-y-2">
-                <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
-                  Bab I: Pendahuluan
-                </div>
-                <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
-                  Bab III: Metodologi
-                </div>
-                <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
-                  Bab IV: Hasil & Pembahasan
-                </div>
+                {sessionData ? (
+                  sessionData.sessionChapters.map((sc: any) => (
+                    <div key={sc.id} className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd] flex-shrink-0"></span>
+                      <span className="truncate" title={sc.chapter.title}>{sc.chapter.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
+                      Pendahuluan
+                    </div>
+                    <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
+                      Metodologi
+                    </div>
+                    <div className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd]"></span>
+                      Hasil & Pembahasan
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

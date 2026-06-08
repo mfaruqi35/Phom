@@ -86,8 +86,9 @@ const calculateSessionScore = (answerScores: any[]) => {
   const avgMethodology = totalMethodology / answerScores.length;
   const avgTheory = totalTheory / answerScores.length;
   const avgArgument = totalArgument / answerScores.length;
-  
-  const finalScore = ((avgMethodology * 0.4) + (avgTheory * 0.3) + (avgArgument * 0.3)) / 5 * 100;
+
+  const finalScore =
+    ((avgMethodology * 0.4 + avgTheory * 0.3 + avgArgument * 0.3) / 5) * 100;
   return Math.round(finalScore);
 };
 
@@ -106,21 +107,26 @@ export default function DashboardPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>([]);
-  const [simulationMode, setSimulationMode] = useState<SimulationMode>("standard");
+  const [simulationMode, setSimulationMode] =
+    useState<SimulationMode>("standard");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ingestion In-Progress State
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
-  const [processingPhase, setProcessingPhase] = useState("Menunggu unggahan...");
+  const [processingPhase, setProcessingPhase] = useState(
+    "Menunggu unggahan...",
+  );
 
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // API Integration States
-  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [recentSessions, setRecentSessions] = useState<any[]>([]);
@@ -129,7 +135,10 @@ export default function DashboardPage() {
   // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setProfileDropdownOpen(false);
       }
     }
@@ -142,9 +151,12 @@ export default function DashboardPage() {
     if (!session) return;
     const fetchRecentSessions = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/sessions/user", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          "http://localhost:3001/api/sessions/user",
+          {
+            credentials: "include",
+          },
+        );
         const resJson = await response.json();
         if (resJson.success) {
           setRecentSessions(resJson.data);
@@ -163,24 +175,30 @@ export default function DashboardPage() {
     let progress = 30;
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/documents/${documentId}/status`, {
-          credentials: "include",
-        });
+        const response = await fetch(
+          `http://localhost:3001/api/documents/${documentId}/status`,
+          {
+            credentials: "include",
+          },
+        );
         const resJson = await response.json();
-        
+
         if (resJson.success) {
           const status = resJson.data.status;
-          
+
           if (status === "READY") {
             clearInterval(interval);
             setProcessingProgress(100);
             setProcessingPhase("Analisis bab selesai!");
             setIsProcessing(false);
-            
+
             // Fetch chapters
-            const chaptersRes = await fetch(`http://localhost:3001/api/chapters/${documentId}`, {
-              credentials: "include",
-            });
+            const chaptersRes = await fetch(
+              `http://localhost:3001/api/chapters/${documentId}`,
+              {
+                credentials: "include",
+              },
+            );
             const chaptersJson = await chaptersRes.json();
             if (chaptersJson.success) {
               const mapped = chaptersJson.data.map((ch: any) => ({
@@ -198,12 +216,17 @@ export default function DashboardPage() {
             setIsProcessing(false);
             setUploadedFile(null);
             setCurrentDocumentId(null);
-            setErrorMessage("File PDF yang diunggah tidak memiliki struktur atau konten akademik yang sesuai dengan skripsi. Silakan unggah draf skripsi yang valid.");
+            setErrorMessage(
+              "File PDF yang diunggah tidak memiliki struktur atau konten akademik yang sesuai dengan skripsi. Silakan unggah draf skripsi yang valid.",
+            );
           } else {
             // Processing: update progress bar slightly
-            progress = Math.min(progress + Math.floor(Math.random() * 8) + 2, 95);
+            progress = Math.min(
+              progress + Math.floor(Math.random() * 8) + 2,
+              95,
+            );
             setProcessingProgress(progress);
-            
+
             // Cycle phase messages
             if (progress < 50) {
               setProcessingPhase("Mengekstrak teks & struktur...");
@@ -236,9 +259,9 @@ export default function DashboardPage() {
         body: formData,
         credentials: "include",
       });
-      
+
       const resJson = await response.json();
-      
+
       if (resJson.success) {
         const docId = resJson.data.id;
         setCurrentDocumentId(docId);
@@ -248,24 +271,33 @@ export default function DashboardPage() {
       } else {
         setIsProcessing(false);
         setUploadedFile(null);
-        setErrorMessage(resJson.error?.message || "Gagal mengunggah file. Silakan coba lagi.");
+        setErrorMessage(
+          resJson.error?.message || "Gagal mengunggah file. Silakan coba lagi.",
+        );
       }
     } catch (err) {
       setIsProcessing(false);
       setUploadedFile(null);
-      setErrorMessage("Tidak dapat terhubung ke server. Pastikan koneksi aktif.");
+      setErrorMessage(
+        "Tidak dapat terhubung ke server. Pastikan koneksi aktif.",
+      );
       console.error(err);
     }
   };
 
-  const saveChapterChanges = async (chapterId: string, fields: Partial<Chapter>) => {
+  const saveChapterChanges = async (
+    chapterId: string,
+    fields: Partial<Chapter>,
+  ) => {
     if (chapterId.length < 5) return;
-    
+
     try {
       const payload: any = {};
       if (fields.title !== undefined) payload.title = fields.title;
-      if (fields.pageStart !== undefined) payload.pageStart = Number(fields.pageStart);
-      if (fields.pageEnd !== undefined) payload.pageEnd = Number(fields.pageEnd);
+      if (fields.pageStart !== undefined)
+        payload.pageStart = Number(fields.pageStart);
+      if (fields.pageEnd !== undefined)
+        payload.pageEnd = Number(fields.pageEnd);
 
       await fetch(`http://localhost:3001/api/chapters/${chapterId}`, {
         method: "PUT",
@@ -304,24 +336,24 @@ export default function DashboardPage() {
 
   const handleChapterTitleChange = (id: string, newTitle: string) => {
     setChapters(
-      chapters.map((ch) => (ch.id === id ? { ...ch, title: newTitle } : ch))
+      chapters.map((ch) => (ch.id === id ? { ...ch, title: newTitle } : ch)),
     );
   };
 
   const handlePageChange = (
     id: string,
     field: "pageStart" | "pageEnd",
-    value: string
+    value: string,
   ) => {
     setChapters(
-      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch))
+      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch)),
     );
   };
 
   const handleDeleteChapter = async (id: string) => {
     setChapters(chapters.filter((ch) => ch.id !== id));
     setSelectedChapterIds(selectedChapterIds.filter((x) => x !== id));
-    
+
     if (id.length >= 5) {
       try {
         await fetch(`http://localhost:3001/api/chapters/${id}`, {
@@ -336,11 +368,22 @@ export default function DashboardPage() {
 
   const handleAddChapter = async () => {
     if (!currentDocumentId) return;
-    
+
     const nextNum = chapters.length + 1;
-    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+    const romanNumerals = [
+      "I",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+    ];
     const romanLabel = romanNumerals[nextNum - 1] || String(nextNum);
-    
+
     const newChapterPayload = {
       chapters: [
         {
@@ -349,25 +392,31 @@ export default function DashboardPage() {
           pageStart: 0,
           pageEnd: 0,
           orderIndex: nextNum,
-        }
-      ]
+        },
+      ],
     };
 
     try {
-      const response = await fetch(`http://localhost:3001/api/chapters/${currentDocumentId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `http://localhost:3001/api/chapters/${currentDocumentId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newChapterPayload),
+          credentials: "include",
         },
-        body: JSON.stringify(newChapterPayload),
-        credentials: "include",
-      });
+      );
       const resJson = await response.json();
       if (resJson.success) {
         // Fetch chapters again to get database IDs
-        const getRes = await fetch(`http://localhost:3001/api/chapters/${currentDocumentId}`, {
-          credentials: "include",
-        });
+        const getRes = await fetch(
+          `http://localhost:3001/api/chapters/${currentDocumentId}`,
+          {
+            credentials: "include",
+          },
+        );
         const getJson = await getRes.json();
         if (getJson.success) {
           const fetched = getJson.data.map((ch: any) => ({
@@ -388,7 +437,7 @@ export default function DashboardPage() {
 
   const toggleChapter = (id: string) => {
     setSelectedChapterIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -398,7 +447,7 @@ export default function DashboardPage() {
   };
 
   const selectedFocusChapters = chapters.filter((ch) =>
-    selectedChapterIds.includes(ch.id)
+    selectedChapterIds.includes(ch.id),
   );
 
   const canStartSimulation =
@@ -409,7 +458,7 @@ export default function DashboardPage() {
 
   const handleStartSimulation = async () => {
     if (!canStartSimulation || !currentDocumentId) return;
-    
+
     setIsStartingSession(true);
     setErrorMessage(null);
 
@@ -427,12 +476,14 @@ export default function DashboardPage() {
         credentials: "include",
       });
       const resJson = await response.json();
-      
+
       if (resJson.success) {
         router.push(`/workspace/${resJson.data.id}`);
       } else {
         setIsStartingSession(false);
-        setErrorMessage(resJson.error?.message || "Gagal membuat sesi simulasi.");
+        setErrorMessage(
+          resJson.error?.message || "Gagal membuat sesi simulasi.",
+        );
       }
     } catch (err) {
       setIsStartingSession(false);
@@ -467,7 +518,9 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-[#F8F9FF] flex items-center justify-center font-body">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-[#3525cd] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs font-semibold text-[#3525cd]/80 animate-pulse">Memuat sesi Anda...</p>
+          <p className="text-xs font-semibold text-[#3525cd]/80 animate-pulse">
+            Memuat sesi Anda...
+          </p>
         </div>
       </div>
     );
@@ -758,7 +811,7 @@ export default function DashboardPage() {
                     <thead>
                       <tr className="border-b border-gray-100 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
                         <th className="py-2.5 px-2 w-10">Fokus</th>
-                        <th className="py-2.5 px-2 w-8 text-center">No</th>
+                        <th className="py-2.5 px-2 w-8 text-center">Bab</th>
                         <th className="py-2.5 px-2">Nama Bab / Subjek</th>
                         <th className="py-2.5 px-2 w-48 text-center">
                           Halaman
@@ -977,7 +1030,9 @@ export default function DashboardPage() {
                 {isLoadingSessions ? (
                   <div className="flex flex-col items-center gap-2 py-8">
                     <div className="w-6 h-6 border-2 border-[#3525cd] border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-[10px] text-gray-400">Memuat riwayat...</p>
+                    <p className="text-[10px] text-gray-400">
+                      Memuat riwayat...
+                    </p>
                   </div>
                 ) : recentSessions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 px-4 rounded-xl border border-dashed border-[#C7C4D8]/60 bg-gray-50/30 text-center select-none animate-fadeIn">
@@ -986,45 +1041,62 @@ export default function DashboardPage() {
                         history_toggle_off
                       </span>
                     </div>
-                    <p className="text-[11px] font-bold text-gray-700">Belum Ada Riwayat Ujian</p>
+                    <p className="text-[11px] font-bold text-gray-700">
+                      Belum Ada Riwayat Ujian
+                    </p>
                     <p className="text-[9px] text-gray-400 max-w-[200px] mt-1 leading-normal">
-                      Sesi simulasi skripsi yang telah Anda selesaikan akan muncul di sini.
+                      Sesi simulasi skripsi yang telah Anda selesaikan akan
+                      muncul di sini.
                     </p>
                   </div>
                 ) : (
                   recentSessions.slice(0, 3).map((sessionItem) => {
-                    const dateStr = new Date(sessionItem.createdAt).toLocaleDateString("id-ID", {
+                    const dateStr = new Date(
+                      sessionItem.createdAt,
+                    ).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
                     });
-                    const score = calculateSessionScore(sessionItem.answerScores);
-                    const docTitle = sessionItem.document?.title || "Dokumen Tanpa Judul";
-                    
+                    const score = calculateSessionScore(
+                      sessionItem.answerScores,
+                    );
+                    const docTitle =
+                      sessionItem.document?.title || "Dokumen Tanpa Judul";
+
                     return (
-                      <div key={sessionItem.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-[#F8F9FF]/20 hover:bg-[#F8F9FF]/50 transition-all">
+                      <div
+                        key={sessionItem.id}
+                        className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-[#F8F9FF]/20 hover:bg-[#F8F9FF]/50 transition-all"
+                      >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span className="material-symbols-outlined text-lg text-indigo-500 flex-shrink-0">
                             description
                           </span>
                           <div className="min-w-0">
-                            <p className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]" title={docTitle}>
+                            <p
+                              className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]"
+                              title={docTitle}
+                            >
                               {docTitle}
                             </p>
                             <p className="text-[9px] text-gray-400">
-                              {dateStr} • {sessionItem.totalQuestions || 0} Pertanyaan
+                              {dateStr} • {sessionItem.totalQuestions || 0}{" "}
+                              Pertanyaan
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {score !== null ? (
-                            <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full border ${
-                              score >= 75
-                                ? "text-emerald-600 bg-emerald-50 border-emerald-100"
-                                : score >= 60
-                                ? "text-indigo-600 bg-indigo-50 border-indigo-100"
-                                : "text-amber-600 bg-amber-50 border-amber-100"
-                            }`}>
+                            <span
+                              className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full border ${
+                                score >= 75
+                                  ? "text-emerald-600 bg-emerald-50 border-emerald-100"
+                                  : score >= 60
+                                    ? "text-indigo-600 bg-indigo-50 border-indigo-100"
+                                    : "text-amber-600 bg-amber-50 border-amber-100"
+                              }`}
+                            >
                               Skor: {score}
                             </span>
                           ) : (
@@ -1033,9 +1105,9 @@ export default function DashboardPage() {
                             </span>
                           )}
                           <a
-                            href={`/evaluation/${sessionItem.id}`}
+                            href={sessionItem.isCompleted ? `/evaluation/${sessionItem.id}` : `/workspace/${sessionItem.id}`}
                             className="p-1 text-gray-400 hover:text-[#3525cd] transition-colors"
-                            title="Lihat Laporan"
+                            title={sessionItem.isCompleted ? "Lihat Laporan" : "Lanjutkan Simulasi"}
                           >
                             <span className="material-symbols-outlined text-base">
                               arrow_forward
