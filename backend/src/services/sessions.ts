@@ -53,6 +53,7 @@ export const getUserSessionsService = async (userId: string) => {
     where: { userId },
     include: {
       document: true,
+      answerScores: true,
       sessionChapters: {
         include: { chapter: true },
       },
