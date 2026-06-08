@@ -46,10 +46,13 @@ def generate_questions(document_id: str, chapter_ids: List[str], mode: str) -> L
         top_k=3
     )
 
+    print(f"Chunks found: {len(chunks)}")
+
     if not chunks:
         return []
 
     context = "\n\n".join(chunks)
+    print(f"Context length: {len(context)}")
 
     system = f"""Kamu adalah penguji sidang skripsi yang berpengalaman. 
 Tugasmu adalah membuat {target_count} pertanyaan sidang skripsi berdasarkan isi dokumen yang diberikan.

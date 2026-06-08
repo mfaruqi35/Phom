@@ -15,3 +15,4 @@ class EvaluateResponse(BaseModel):
     is_satisfied: bool
     scores: EvaluateScores
     rebuttal: str | None
+    feedback: str | None = None
