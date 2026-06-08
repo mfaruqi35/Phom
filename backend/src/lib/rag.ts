@@ -10,6 +10,17 @@ export const ragApi = {
       .post("validate", { json: { text } })
       .json<{ is_academic: boolean }>(),
 
+  parseToc: (payload: { document_id: string; file_url: string }) =>
+    ragClient.post("parse-toc", { json: payload }).json<{
+      chapters: {
+        label: string;
+        title: string;
+        page_start: number;
+        page_end: number;
+        order_index: number;
+      }[];
+    }>(),
+
   process: (payload: {
     document_id: string;
     file_url: string;
