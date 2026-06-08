@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type SimulationMode = "quick" | "standard" | "deep";
@@ -17,9 +18,27 @@ interface Chapter {
 // ─── Mock data ────────────────────────────────────────────────────────────────
 const INITIAL_CHAPTERS: Chapter[] = [
   { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
-  { id: "2", label: "II", title: "Tinjauan Pustaka", pageStart: "11", pageEnd: "25" },
-  { id: "3", label: "III", title: "Metodologi", pageStart: "26", pageEnd: "45" },
-  { id: "4", label: "IV", title: "Hasil & Pembahasan", pageStart: "", pageEnd: "" },
+  {
+    id: "2",
+    label: "II",
+    title: "Tinjauan Pustaka",
+    pageStart: "11",
+    pageEnd: "25",
+  },
+  {
+    id: "3",
+    label: "III",
+    title: "Metodologi",
+    pageStart: "26",
+    pageEnd: "45",
+  },
+  {
+    id: "4",
+    label: "IV",
+    title: "Hasil & Pembahasan",
+    pageStart: "",
+    pageEnd: "",
+  },
   { id: "5", label: "V", title: "Penutupan", pageStart: "", pageEnd: "" },
 ];
 
@@ -47,19 +66,43 @@ const SIMULATION_MODES = [
   },
 ];
 
+const getUserInitials = (name?: string) => {
+  if (!name) return "US";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 export default function DashboardPage() {
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
+  // Client-side route guard: redirect to "/" if not logged in
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/");
+    }
+  }, [session, isPending, router]);
+
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>(INITIAL_CHAPTERS);
-  const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>(["1", "2", "3"]);
-  const [simulationMode, setSimulationMode] = useState<SimulationMode>("standard");
+  const [selectedChapterIds, setSelectedChapterIds] = useState<string[]>([
+    "1",
+    "2",
+    "3",
+  ]);
+  const [simulationMode, setSimulationMode] =
+    useState<SimulationMode>("standard");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ingestion In-Progress State
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
-  const [processingPhase, setProcessingPhase] = useState("Menunggu unggahan...");
+  const [processingPhase, setProcessingPhase] = useState(
+    "Menunggu unggahan...",
+  );
 
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -68,21 +111,15 @@ export default function DashboardPage() {
   // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setProfileDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Set initial file on client load for demo purposes if desired
-  useEffect(() => {
-    const mockFile = new File(["dummy content"], "Full_Thesis_Final_Draft.pdf", {
-      type: "application/pdf",
-    });
-    Object.defineProperty(mockFile, "size", { value: 14.2 * 1024 * 1024 });
-    setUploadedFile(mockFile);
   }, []);
 
   // Ingestion Simulation Trigger
@@ -91,7 +128,7 @@ export default function DashboardPage() {
       setIsProcessing(true);
       setProcessingProgress(0);
       setProcessingPhase("Membaca struktur PDF...");
-      
+
       const interval = setInterval(() => {
         setProcessingProgress((prev) => {
           if (prev >= 100) {
@@ -102,7 +139,7 @@ export default function DashboardPage() {
           }
           const next = prev + Math.floor(Math.random() * 12) + 6;
           const currentProgress = Math.min(next, 100);
-          
+
           if (currentProgress < 25) {
             setProcessingPhase("Membaca struktur PDF...");
           } else if (currentProgress < 55) {
@@ -145,13 +182,17 @@ export default function DashboardPage() {
 
   const handleChapterTitleChange = (id: string, newTitle: string) => {
     setChapters(
-      chapters.map((ch) => (ch.id === id ? { ...ch, title: newTitle } : ch))
+      chapters.map((ch) => (ch.id === id ? { ...ch, title: newTitle } : ch)),
     );
   };
 
-  const handlePageChange = (id: string, field: "pageStart" | "pageEnd", value: string) => {
+  const handlePageChange = (
+    id: string,
+    field: "pageStart" | "pageEnd",
+    value: string,
+  ) => {
     setChapters(
-      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch))
+      chapters.map((ch) => (ch.id === id ? { ...ch, [field]: value } : ch)),
     );
   };
 
@@ -162,10 +203,21 @@ export default function DashboardPage() {
 
   const handleAddChapter = () => {
     const nextNum = chapters.length + 1;
-    const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+    const romanNumerals = [
+      "I",
+      "II",
+      "III",
+      "IV",
+      "V",
+      "VI",
+      "VII",
+      "VIII",
+      "IX",
+      "X",
+    ];
     const romanLabel = romanNumerals[nextNum - 1] || String(nextNum);
     const newId = String(Date.now());
-    
+
     const newChapter: Chapter = {
       id: newId,
       label: romanLabel,
@@ -179,7 +231,7 @@ export default function DashboardPage() {
 
   const toggleChapter = (id: string) => {
     setSelectedChapterIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -189,7 +241,9 @@ export default function DashboardPage() {
   };
 
   const readyChapters = chapters.filter((ch) => ch.pageStart && ch.pageEnd);
-  const selectedFocusChapters = chapters.filter((ch) => selectedChapterIds.includes(ch.id));
+  const selectedFocusChapters = chapters.filter((ch) =>
+    selectedChapterIds.includes(ch.id),
+  );
 
   const canStartSimulation =
     uploadedFile !== null &&
@@ -198,18 +252,36 @@ export default function DashboardPage() {
     selectedFocusChapters.every((ch) => ch.pageStart && ch.pageEnd);
 
   const getStatusText = () => {
-    if (!uploadedFile) return "Silakan unggah draf skripsi PDF Anda terlebih dahulu.";
-    if (isProcessing) return `Sedang memproses naskah: ${processingProgress}% (${processingPhase})`;
-    if (selectedFocusChapters.length === 0) return "Silakan pilih minimal satu bab sebagai area fokus simulasi.";
-    
-    const invalidChapters = selectedFocusChapters.filter((ch) => !ch.pageStart || !ch.pageEnd);
+    if (!uploadedFile)
+      return "Silakan unggah draf skripsi PDF Anda terlebih dahulu.";
+    if (isProcessing)
+      return `Sedang memproses naskah: ${processingProgress}% (${processingPhase})`;
+    if (selectedFocusChapters.length === 0)
+      return "Silakan pilih minimal satu bab sebagai area fokus simulasi.";
+
+    const invalidChapters = selectedFocusChapters.filter(
+      (ch) => !ch.pageStart || !ch.pageEnd,
+    );
     if (invalidChapters.length > 0) {
       return `Tentukan rentang halaman untuk ${invalidChapters.map((ch) => `Bab ${ch.label}`).join(", ")}.`;
     }
 
-    const chapterNames = selectedFocusChapters.map((ch) => `Bab ${ch.label}`).join(", ");
+    const chapterNames = selectedFocusChapters
+      .map((ch) => `Bab ${ch.label}`)
+      .join(", ");
     return `Sistem siap menganalisis ${chapterNames} dengan mode ${simulationMode.toUpperCase()}.`;
   };
+
+  if (isPending) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FF] flex items-center justify-center font-body">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#3525cd] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-semibold text-[#3525cd]/80 animate-pulse">Memuat sesi Anda...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col font-body relative overflow-hidden">
@@ -222,7 +294,10 @@ export default function DashboardPage() {
         <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <a href="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
-              <span className="material-symbols-outlined text-xl font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span
+                className="material-symbols-outlined text-xl font-bold"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
                 neurology
               </span>
             </div>
@@ -237,17 +312,17 @@ export default function DashboardPage() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Workspace Aktif
             </div>
-            
+
             {/* User profile dropdown button */}
-            <button 
+            <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                AS
+                {getUserInitials(user?.name)}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                Dr. Aris Setiawan
+                {user?.name}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -258,23 +333,34 @@ export default function DashboardPage() {
             {profileDropdownOpen && (
               <div className="absolute right-0 top-full mt-2.5 w-52 bg-white border border-indigo-50 rounded-2xl shadow-xl p-2 z-50 animate-fadeIn">
                 <div className="px-3 py-2 border-b border-gray-50 mb-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Akun Demo</p>
-                  <p className="text-xs font-bold text-gray-800 truncate">aris.setiawan@univ.ac.id</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                    {session ? "Akun Pengguna" : "Akun Demo"}
+                  </p>
+                  <p className="text-xs font-bold text-gray-800 truncate">
+                    {user?.email || "aris.setiawan@univ.ac.id"}
+                  </p>
                 </div>
-                <a 
-                  href="/history" 
+                <a
+                  href="/history"
                   className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
                 >
-                  <span className="material-symbols-outlined text-base">history</span>
+                  <span className="material-symbols-outlined text-base">
+                    history
+                  </span>
                   Riwayat Sesi
                 </a>
-                <a 
-                  href="/" 
-                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all"
+                <button
+                  onClick={async () => {
+                    await authClient.signOut();
+                    router.push("/");
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all text-left"
                 >
-                  <span className="material-symbols-outlined text-base">logout</span>
+                  <span className="material-symbols-outlined text-base">
+                    logout
+                  </span>
                   Keluar
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -283,18 +369,16 @@ export default function DashboardPage() {
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-10 flex flex-col gap-8 z-10">
-        
         {/* Header Intro */}
         <div className="text-center max-w-2xl mx-auto animate-title">
           <h1 className="text-4xl font-heading font-extrabold text-[#0B1C30] tracking-tight mb-2">
             Dashboard Simulator
           </h1>
           <p className="text-sm text-gray-500 leading-relaxed">
-            Unggah naskah skripsi PDF Anda, verifikasi cakupan bab, dan pilih intensitas simulasi ujian untuk memulai pertahanan akademik Anda.
+            Unggah naskah skripsi PDF Anda, verifikasi cakupan bab, dan pilih
+            intensitas simulasi ujian untuk memulai pertahanan akademik Anda.
           </p>
         </div>
-
-
 
         {/* 1. Centered Processing Status Zone / Dropzone */}
         <div className="w-full max-w-4xl mx-auto animate-card-1">
@@ -338,17 +422,19 @@ export default function DashboardPage() {
                   <h3 className="text-[#0B1C30] font-bold text-base mb-1 truncate max-w-[85%]">
                     {uploadedFile.name}
                   </h3>
-                  
+
                   {isProcessing ? (
                     <div className="w-full mt-3">
                       <div className="flex justify-between items-center mb-1.5 text-xs">
                         <span className="text-indigo-600 font-bold animate-pulse">
                           {processingPhase}
                         </span>
-                        <span className="text-gray-500 font-semibold">{processingProgress}%</span>
+                        <span className="text-gray-500 font-semibold">
+                          {processingProgress}%
+                        </span>
                       </div>
                       <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-gradient-to-r from-[#3525cd] to-[#6f3dd9] rounded-full transition-all duration-300"
                           style={{ width: `${processingProgress}%` }}
                         />
@@ -357,8 +443,11 @@ export default function DashboardPage() {
                   ) : (
                     <div className="flex flex-col items-center mt-1">
                       <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100/50 mb-6">
-                        <span className="material-symbols-outlined text-sm font-bold">check_circle</span>
-                        Naskah Berhasil Diproses • {formatSize(uploadedFile.size)}
+                        <span className="material-symbols-outlined text-sm font-bold">
+                          check_circle
+                        </span>
+                        Naskah Berhasil Diproses •{" "}
+                        {formatSize(uploadedFile.size)}
                       </div>
                       <div className="flex gap-3">
                         <button
@@ -388,7 +477,7 @@ export default function DashboardPage() {
                     Jatuhkan naskah PDF skripsi Anda di sini
                   </h3>
                   <p className="text-gray-400 text-xs mb-5 max-w-xs leading-relaxed">
-                    Unggah dokumen Bab I - V dalam satu file PDF (ukuran maksimal 25MB)
+                    Unggah dokumen dalam satu file PDF (ukuran maksimal 25MB)
                   </p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -404,7 +493,6 @@ export default function DashboardPage() {
 
         {/* 2-Column Workspace Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* Left Column: Chapter Configuration */}
           <section className="lg:col-span-7 bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-2 flex flex-col">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-50">
@@ -413,117 +501,167 @@ export default function DashboardPage() {
                   Chapter Configuration
                 </h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Tentukan judul bab, rentang halaman, dan centang area yang ingin diuji.
+                  Tentukan judul bab, rentang halaman, dan centang area yang
+                  ingin diuji.
                 </p>
               </div>
-              <button
-                onClick={handleAddChapter}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-100 hover:border-indigo-200 text-[#3525cd] hover:bg-indigo-50/30 text-xs font-bold transition-all active:scale-[0.97]"
-              >
-                <span className="material-symbols-outlined text-base">add</span>
-                Tambah Bab
-              </button>
+              {uploadedFile && (
+                <button
+                  onClick={handleAddChapter}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-100 hover:border-indigo-200 text-[#3525cd] hover:bg-indigo-50/30 text-xs font-bold transition-all active:scale-[0.97]"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    add
+                  </span>
+                  Tambah Bab
+                </button>
+              )}
             </div>
 
-            {/* Config Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[500px]">
-                <thead>
-                  <tr className="border-b border-gray-100 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                    <th className="py-2.5 px-2 w-10">Fokus</th>
-                    <th className="py-2.5 px-2 w-8 text-center">No</th>
-                    <th className="py-2.5 px-2">Nama Bab / Subjek</th>
-                    <th className="py-2.5 px-2 w-48 text-center">Halaman</th>
-                    <th className="py-2.5 px-2 w-12 text-center">Hapus</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {chapters.map((chapter) => {
-                    const isSelected = selectedChapterIds.includes(chapter.id);
-                    
-                    return (
-                      <tr 
-                        key={chapter.id}
-                        className={`border-b border-gray-50 transition-colors group ${
-                          isSelected ? "bg-indigo-50/15" : "hover:bg-gray-50/30"
-                        }`}
-                      >
-                        {/* Checkbox Selector */}
-                        <td className="py-3 px-2 text-center">
-                          <input 
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleChapter(chapter.id)}
-                            className="rounded border-[#C7C4D8] text-[#3525cd] focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer transition-all"
-                          />
-                        </td>
-
-                        {/* Label No. (e.g. Bab I) */}
-                        <td className="py-3 px-2 text-center text-xs font-bold text-gray-400">
-                          {chapter.label}
-                        </td>
-
-                        {/* Editable Title */}
-                        <td className="py-3 px-2">
-                          <input
-                            type="text"
-                            value={chapter.title}
-                            onChange={(e) => handleChapterTitleChange(chapter.id, e.target.value)}
-                            className="w-full bg-transparent border-b border-transparent focus:border-indigo-400 hover:border-gray-200 text-xs font-semibold text-gray-700 py-1 focus:outline-none transition-colors"
-                            placeholder="Tulis Judul Bab..."
-                          />
-                        </td>
-
-                        {/* Page Ranges */}
-                        <td className="py-3 px-2">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <input
-                              type="number"
-                              min="1"
-                              placeholder="Mulai"
-                              value={chapter.pageStart}
-                              onChange={(e) => handlePageChange(chapter.id, "pageStart", e.target.value)}
-                              className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
-                            />
-                            <span className="text-gray-300 text-sm">—</span>
-                            <input
-                              type="number"
-                              min="1"
-                              placeholder="Akhir"
-                              value={chapter.pageEnd}
-                              onChange={(e) => handlePageChange(chapter.id, "pageEnd", e.target.value)}
-                              className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
-                            />
-                          </div>
-                        </td>
-
-                        {/* Delete Action */}
-                        <td className="py-3 px-2 text-center">
-                          <button
-                            onClick={() => handleDeleteChapter(chapter.id)}
-                            className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Hapus bab"
-                          >
-                            <span className="material-symbols-outlined text-base font-bold">delete</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {chapters.length === 0 && (
-              <div className="py-8 text-center text-xs text-gray-400 font-medium">
-                Belum ada bab dikonfigurasi. Klik "Tambah Bab" untuk memulai.
+            {/* Config Table / Empty State */}
+            {!uploadedFile ? (
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center select-none animate-fadeIn">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50/50 flex items-center justify-center mb-5 border border-indigo-100/35 shadow-sm">
+                  <span className="material-symbols-outlined text-3xl text-indigo-400">
+                    menu_book
+                  </span>
+                </div>
+                <h3 className="text-[#0B1C30] font-bold text-sm mb-1.5 font-heading">
+                  Konfigurasi Bab Belum Tersedia
+                </h3>
+                <p className="text-gray-400 text-xs max-w-sm leading-relaxed">
+                  Unggah naskah PDF skripsi Anda terlebih dahulu pada area di
+                  atas untuk menganalisis bab dan memetakan rentang halaman
+                  secara otomatis.
+                </p>
               </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[500px]">
+                    <thead>
+                      <tr className="border-b border-gray-100 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                        <th className="py-2.5 px-2 w-10">Fokus</th>
+                        <th className="py-2.5 px-2 w-8 text-center">No</th>
+                        <th className="py-2.5 px-2">Nama Bab / Subjek</th>
+                        <th className="py-2.5 px-2 w-48 text-center">
+                          Halaman
+                        </th>
+                        <th className="py-2.5 px-2 w-12 text-center">Hapus</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {chapters.map((chapter) => {
+                        const isSelected = selectedChapterIds.includes(
+                          chapter.id,
+                        );
+
+                        return (
+                          <tr
+                            key={chapter.id}
+                            className={`border-b border-gray-50 transition-colors group ${
+                              isSelected
+                                ? "bg-indigo-50/15"
+                                : "hover:bg-gray-50/30"
+                            }`}
+                          >
+                            {/* Checkbox Selector */}
+                            <td className="py-3 px-2 text-center">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleChapter(chapter.id)}
+                                className="rounded border-[#C7C4D8] text-[#3525cd] focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer transition-all"
+                              />
+                            </td>
+
+                            {/* Label No. (e.g. Bab I) */}
+                            <td className="py-3 px-2 text-center text-xs font-bold text-gray-400">
+                              {chapter.label}
+                            </td>
+
+                            {/* Editable Title */}
+                            <td className="py-3 px-2">
+                              <input
+                                type="text"
+                                value={chapter.title}
+                                onChange={(e) =>
+                                  handleChapterTitleChange(
+                                    chapter.id,
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-full bg-transparent border-b border-transparent focus:border-indigo-400 hover:border-gray-200 text-xs font-semibold text-gray-700 py-1 focus:outline-none transition-colors"
+                                placeholder="Tulis Judul Bab..."
+                              />
+                            </td>
+
+                            {/* Page Ranges */}
+                            <td className="py-3 px-2">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Mulai"
+                                  value={chapter.pageStart}
+                                  onChange={(e) =>
+                                    handlePageChange(
+                                      chapter.id,
+                                      "pageStart",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
+                                />
+                                <span className="text-gray-300 text-sm">—</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Akhir"
+                                  value={chapter.pageEnd}
+                                  onChange={(e) =>
+                                    handlePageChange(
+                                      chapter.id,
+                                      "pageEnd",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-16 h-8 text-center rounded-lg border border-[#C7C4D8]/60 bg-white text-xs font-semibold text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-indigo-400 transition-colors focus:ring-2 focus:ring-indigo-500/10"
+                                />
+                              </div>
+                            </td>
+
+                            {/* Delete Action */}
+                            <td className="py-3 px-2 text-center">
+                              <button
+                                onClick={() => handleDeleteChapter(chapter.id)}
+                                className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                title="Hapus bab"
+                              >
+                                <span className="material-symbols-outlined text-base font-bold">
+                                  delete
+                                </span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {chapters.length === 0 && (
+                  <div className="py-8 text-center text-xs text-gray-400 font-medium">
+                    Belum ada bab dikonfigurasi. Klik "Tambah Bab" untuk
+                    memulai.
+                  </div>
+                )}
+              </>
             )}
           </section>
 
           {/* Right Column: Session Intensity & Recent Sessions */}
           <div className="lg:col-span-5 space-y-6 flex flex-col">
-            
             <section className="w-full bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 md:p-8 shadow-sm animate-card-3 flex flex-col gap-6">
               <div>
                 <h2 className="text-lg font-heading font-extrabold text-[#0B1C30]">
@@ -538,7 +676,7 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-4">
                 {SIMULATION_MODES.map((mode) => {
                   const isSelected = simulationMode === mode.id;
-                  
+
                   return (
                     <button
                       key={mode.id}
@@ -615,19 +753,23 @@ export default function DashboardPage() {
                       <p className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]">
                         Full_Thesis_Final_Draft.pdf
                       </p>
-                      <p className="text-[9px] text-gray-400">06 Juni 2026 • 8 Pertanyaan</p>
+                      <p className="text-[9px] text-gray-400">
+                        06 Juni 2026 • 8 Pertanyaan
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[11px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
                       Skor: 78
                     </span>
-                    <a 
-                      href="/evaluation/mock-session" 
+                    <a
+                      href="/evaluation/mock-session"
                       className="p-1 text-gray-400 hover:text-[#3525cd] transition-colors"
                       title="Lihat Laporan"
                     >
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                      <span className="material-symbols-outlined text-base">
+                        arrow_forward
+                      </span>
                     </a>
                   </div>
                 </div>
@@ -642,34 +784,36 @@ export default function DashboardPage() {
                       <p className="text-[11px] font-bold text-gray-700 truncate max-w-[120px] sm:max-w-[180px]">
                         Skripsi_Revisi_v1.pdf
                       </p>
-                      <p className="text-[9px] text-gray-400">04 Juni 2026 • 5 Pertanyaan</p>
+                      <p className="text-[9px] text-gray-400">
+                        04 Juni 2026 • 5 Pertanyaan
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[11px] font-extrabold text-[#3525cd] bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
                       Skor: 64
                     </span>
-                    <a 
-                      href="/evaluation/mock-session" 
+                    <a
+                      href="/evaluation/mock-session"
                       className="p-1 text-gray-400 hover:text-[#3525cd] transition-colors"
                       title="Lihat Laporan"
                     >
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                      <span className="material-symbols-outlined text-base">
+                        arrow_forward
+                      </span>
                     </a>
                   </div>
                 </div>
               </div>
 
-              <a 
-                href="/history" 
+              <a
+                href="/history"
                 className="text-center text-[10px] font-extrabold text-[#3525cd] hover:underline uppercase tracking-wider block mt-1"
               >
                 Lihat Semua Riwayat Sesi
               </a>
             </div>
-
           </div>
-
         </div>
 
         {/* Start Simulation Action */}
@@ -689,18 +833,21 @@ export default function DashboardPage() {
             }`}
           >
             Mulai Sidang Simulasi
-            <span className="material-symbols-outlined text-lg font-bold">play_arrow</span>
+            <span className="material-symbols-outlined text-lg font-bold">
+              play_arrow
+            </span>
           </button>
 
           <p className="text-xs text-gray-400 text-center font-medium mt-1 leading-relaxed px-4">
             {getStatusText()}
           </p>
         </div>
-
       </main>
 
       {/* Styled block with animations */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes scanline {
           0% { transform: translateY(-100%); }
           50% { transform: translateY(100%); }
@@ -754,7 +901,9 @@ export default function DashboardPage() {
         .animate-scaleUp {
           animation: scaleUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-      `}} />
+      `,
+        }}
+      />
     </div>
   );
 }

@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Better Auth secara otomatis menyimpan token sesi dalam cookie "better-auth.session_token"
-  const sessionToken = request.cookies.get("better-auth.session_token");
+  // Cek token sesi baik di HTTP (development) maupun HTTPS (production)
+  const sessionToken = 
+    request.cookies.get("better-auth.session_token") || 
+    request.cookies.get("__Secure-better-auth.session_token");
 
   const { pathname } = request.nextUrl;
 
   // Daftar path yang membutuhkan autentikasi
   const protectedPaths = ["/dashboard", "/history", "/workspace", "/evaluation"];
-  const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
+  const isProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(path + "/"));
 
   if (isProtected && !sessionToken) {
     // Pengguna belum login, alihkan kembali ke landing page (/)
@@ -20,9 +22,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/dashboard",
     "/dashboard/:path*",
+    "/history",
     "/history/:path*",
+    "/workspace",
     "/workspace/:path*",
+    "/evaluation",
     "/evaluation/:path*",
   ],
 };
