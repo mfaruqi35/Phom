@@ -69,7 +69,9 @@ export const completeSessionService = async (id: string) => {
 };
 
 export const deleteSessionService = async (id: string) => {
-  return prisma.session.delete({
+  // Hubungan foreign key di schema.prisma memiliki onDelete: Cascade,
+  // sehingga kita tidak perlu men-delete secara manual child records (message, answerScore, dll).
+  return prisma.simulationSession.delete({
     where: { id },
   });
 };
