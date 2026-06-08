@@ -9,6 +9,7 @@ interface Message {
   role: "USER" | "AI";
   content: string;
   subTurn: number;
+  questionId: string;
   timestamp: Date;
 }
 
@@ -18,6 +19,8 @@ const getUserInitials = (name?: string) => {
   if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function WorkspacePage() {
   const params = useParams();
@@ -30,22 +33,14 @@ export default function WorkspacePage() {
   const [docTitle, setDocTitle] = useState<string>("Full_Thesis_Final_Draft.pdf");
   const [sessionData, setSessionData] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
-
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "q1",
-      role: "AI",
-      content:
-        "Pada Bab III Metodologi, Anda menggunakan teknik purposive sampling dengan 5 kriteria informan. Bagaimana Anda menjustifikasi bahwa jumlah informan tersebut cukup representatif untuk menjawab pertanyaan penelitian Anda?",
-      subTurn: 0,
-      timestamp: new Date(Date.now() - 5 * 60 * 1000),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [totalQuestions, setTotalQuestions] = useState(8);
   const [subTurn, setSubTurn] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [typingMessage, setTypingMessage] = useState("sedang mempersiapkan pertanyaan");
+  const [isLoading, setIsLoading] = useState(true);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   
@@ -76,12 +71,16 @@ export default function WorkspacePage() {
 
   // Fetch session, questions, and messages on load
   useEffect(() => {
-    if (!sessionId || sessionId === "mock-session") return;
+    if (!sessionId || sessionId === "mock-session") {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchWorkspaceData = async () => {
       try {
+        setIsLoading(true);
         // 1. Fetch Session Details
-        const sessionRes = await fetch(`http://localhost:3001/api/sessions/${sessionId}`, {
+        const sessionRes = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
           credentials: "include",
         });
         const sessionJson = await sessionRes.json();
@@ -96,39 +95,60 @@ export default function WorkspacePage() {
           if (sessionJson.data.currentStep) {
             setCurrentStep(sessionJson.data.currentStep);
           }
+        } else {
+          setIsLoading(false);
+          return;
         }
 
+        // Hide full-screen loading spinner because we now have layout & sidebar info ready!
+        setIsLoading(false);
+
         // 2. Fetch Questions
-        const questionsRes = await fetch(`http://localhost:3001/api/questions/${sessionId}`, {
+        const questionsRes = await fetch(`${API_BASE_URL}/api/questions/${sessionId}`, {
           credentials: "include",
         });
         const questionsJson = await questionsRes.json();
+        
+        let currentQuestions = [];
         if (questionsJson.success) {
-          setQuestions(questionsJson.data);
+          currentQuestions = questionsJson.data;
+          setQuestions(currentQuestions);
+        }
 
-          // 3. Fetch Messages
-          const messagesRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
-            credentials: "include",
-          });
-          const messagesJson = await messagesRes.json();
-          if (messagesJson.success) {
-            const fetchedMsgs = messagesJson.data;
-            if (fetchedMsgs.length > 0) {
-              setMessages(fetchedMsgs.map((m: any) => ({
-                id: m.id,
-                role: m.role,
-                content: m.content,
-                subTurn: m.subTurn,
-                timestamp: new Date(m.createdAt),
-              })));
+        // 3. If no questions generated yet, trigger LLM generation via API
+        if (currentQuestions.length === 0) {
+          setTypingMessage("sedang mempersiapkan pertanyaan");
+          setIsTyping(true);
+          
+          try {
+            const genRes = await fetch(`${API_BASE_URL}/api/questions/generate`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                sessionId,
+                documentId: sessionJson.data.documentId,
+                chapterIds: sessionJson.data.sessionChapters.map((sc: any) => sc.chapterId),
+                mode: sessionJson.data.mode,
+              }),
+              credentials: "include",
+            });
+            const genJson = await genRes.json();
+            
+            if (genJson.success && genJson.data && genJson.data.length > 0) {
+              setQuestions(genJson.data);
+              currentQuestions = genJson.data;
+              setTotalQuestions(genJson.data.length);
               
-              // Set subTurn to the last message's subTurn
-              const lastMsg = fetchedMsgs[fetchedMsgs.length - 1];
-              setSubTurn(lastMsg.subTurn);
-            } else if (questionsJson.data.length > 0) {
-              // Initialize chat with the first pre-generated question
-              const firstQuestion = questionsJson.data[0];
-              const initMsgRes = await fetch("http://localhost:3001/api/messages", {
+              setSessionData((prev: any) => ({
+                ...prev,
+                totalQuestions: genJson.data.length,
+              }));
+
+              // Initialize the first pre-generated question in DB
+              const firstQuestion = genJson.data[0];
+              const initMsgRes = await fetch(`${API_BASE_URL}/api/messages`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -149,14 +169,97 @@ export default function WorkspacePage() {
                   role: "AI",
                   content: firstQuestion.content,
                   subTurn: 0,
+                  questionId: firstQuestion.id,
                   timestamp: new Date(),
                 }]);
+              }
+            } else {
+              const errorText = genJson.error?.message || "Gagal membuat pertanyaan sidang skripsi.";
+              console.warn("Questions generation skipped/failed:", errorText);
+              setMessages([{
+                id: `err-init-${Date.now()}`,
+                role: "AI",
+                content: `⚠️ Gagal mempersiapkan pertanyaan. ${errorText} Silakan muat ulang halaman ini atau pastikan naskah skripsi Anda siap.`,
+                subTurn: 0,
+                questionId: "",
+                timestamp: new Date(),
+              }]);
+            }
+          } catch (genErr: any) {
+            console.warn("Failed to generate questions:", genErr?.message || genErr);
+            setMessages([{
+              id: `err-init-${Date.now()}`,
+              role: "AI",
+              content: `⚠️ Gagal mempersiapkan pertanyaan. ${genErr.message || "Koneksi terputus atau terjadi kesalahan server. Silakan muat ulang halaman ini."}`,
+              subTurn: 0,
+              questionId: "",
+              timestamp: new Date(),
+            }]);
+          } finally {
+            setIsTyping(false);
+          }
+        } else {
+          // Questions exist, load existing messages
+          const messagesRes = await fetch(`${API_BASE_URL}/api/messages/${sessionId}`, {
+            credentials: "include",
+          });
+          const messagesJson = await messagesRes.json();
+          if (messagesJson.success) {
+            const fetchedMsgs = messagesJson.data;
+            if (fetchedMsgs.length > 0) {
+              setMessages(fetchedMsgs.map((m: any) => ({
+                id: m.id,
+                role: m.role,
+                content: m.content,
+                subTurn: m.subTurn,
+                questionId: m.questionId,
+                timestamp: new Date(m.createdAt),
+              })));
+              
+              const lastMsg = fetchedMsgs[fetchedMsgs.length - 1];
+              setSubTurn(lastMsg.subTurn);
+            } else {
+              // Questions exist but no messages initialized yet
+              setTypingMessage("sedang mempersiapkan pertanyaan");
+              setIsTyping(true);
+              const firstQuestion = currentQuestions[0];
+              try {
+                const initMsgRes = await fetch(`${API_BASE_URL}/api/messages`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    sessionId,
+                    questionId: firstQuestion.id,
+                    role: "AI",
+                    content: firstQuestion.content,
+                    subTurn: 0,
+                  }),
+                  credentials: "include",
+                });
+                const initMsgJson = await initMsgRes.json();
+                if (initMsgJson.success) {
+                  setMessages([{
+                    id: initMsgJson.data.message.id,
+                    role: "AI",
+                    content: firstQuestion.content,
+                    subTurn: 0,
+                    questionId: firstQuestion.id,
+                    timestamp: new Date(),
+                  }]);
+                }
+              } catch (initErr) {
+                console.error("Failed to initialize first question message:", initErr);
+              } finally {
+                setIsTyping(false);
               }
             }
           }
         }
       } catch (err) {
         console.error("Failed to load workspace data:", err);
+        setIsLoading(false);
       }
     };
 
@@ -170,8 +273,11 @@ export default function WorkspacePage() {
       setSubTurn(0);
       const nextQuestion = questions[nextStep - 1];
       
+      setTypingMessage("sedang mempersiapkan pertanyaan");
+      setIsTyping(true);
+      
       try {
-        const aiMsgRes = await fetch("http://localhost:3001/api/messages", {
+        const aiMsgRes = await fetch(`${API_BASE_URL}/api/messages`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -187,7 +293,7 @@ export default function WorkspacePage() {
         });
         const aiMsgJson = await aiMsgRes.json();
         if (aiMsgJson.success) {
-          const refreshRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+          const refreshRes = await fetch(`${API_BASE_URL}/api/messages/${sessionId}`, {
             credentials: "include",
           });
           const refreshJson = await refreshRes.json();
@@ -197,16 +303,26 @@ export default function WorkspacePage() {
               role: m.role,
               content: m.content,
               subTurn: m.subTurn,
+              questionId: m.questionId,
               timestamp: new Date(m.createdAt),
             })));
+
+            // Re-sync currentStep dynamically based on unique questionIds in messages
+            const uniqueQuestions = new Set(refreshJson.data.map((m: any) => m.questionId));
+            const activeQCount = uniqueQuestions.size;
+            if (activeQCount > 0) {
+              setCurrentStep(activeQCount);
+            }
           }
         }
       } catch (err) {
         console.error("Failed to post next question:", err);
+      } finally {
+        setIsTyping(false);
       }
     } else {
       try {
-        await fetch(`http://localhost:3001/api/sessions/${sessionId}/complete`, {
+        await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/complete`, {
           method: "PATCH",
           credentials: "include",
         });
@@ -220,11 +336,16 @@ export default function WorkspacePage() {
     e.preventDefault();
     if (!inputText.trim() || isTyping || !questions.length) return;
 
-    const currentQuestion = questions[currentStep - 1];
+    // Find currently active question based on messages history or currentStep
+    const lastAskedQuestion = [...questions]
+      .reverse()
+      .find(q => messages.some(m => m.role === "AI" && m.subTurn === 0 && m.questionId === q.id));
+    const currentQuestion = lastAskedQuestion || questions[currentStep - 1] || questions[0];
     if (!currentQuestion) return;
 
     const userText = inputText;
     setInputText("");
+    setTypingMessage("Mempersiapkan sanggahan");
     setIsTyping(true);
 
     const userMsgLocal: Message = {
@@ -232,12 +353,13 @@ export default function WorkspacePage() {
       role: "USER",
       content: userText,
       subTurn: subTurn,
+      questionId: currentQuestion.id,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMsgLocal]);
 
     try {
-      const response = await fetch("http://localhost:3001/api/messages", {
+      const response = await fetch(`${API_BASE_URL}/api/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +376,7 @@ export default function WorkspacePage() {
       const resJson = await response.json();
 
       if (resJson.success) {
-        const messagesRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+        const messagesRes = await fetch(`${API_BASE_URL}/api/messages/${sessionId}`, {
           credentials: "include",
         });
         const messagesJson = await messagesRes.json();
@@ -264,8 +386,16 @@ export default function WorkspacePage() {
             role: m.role,
             content: m.content,
             subTurn: m.subTurn,
+            questionId: m.questionId,
             timestamp: new Date(m.createdAt),
           })));
+
+          // Sync currentStep based on unique questionIds in messages
+          const uniqueQuestions = new Set(messagesJson.data.map((m: any) => m.questionId));
+          const activeQCount = uniqueQuestions.size;
+          if (activeQCount > 0) {
+            setCurrentStep(activeQCount);
+          }
         }
 
         const evaluation = resJson.data.evaluation;
@@ -275,7 +405,10 @@ export default function WorkspacePage() {
             const nextSubTurn = subTurn + 1;
             setSubTurn(nextSubTurn);
 
-            const aiRebuttalRes = await fetch("http://localhost:3001/api/messages", {
+            setTypingMessage("Mempersiapkan sanggahan");
+            setIsTyping(true);
+
+            const aiRebuttalRes = await fetch(`${API_BASE_URL}/api/messages`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -291,7 +424,7 @@ export default function WorkspacePage() {
             });
             const aiRebuttalJson = await aiRebuttalRes.json();
             if (aiRebuttalJson.success) {
-              const refreshRes = await fetch(`http://localhost:3001/api/messages/${sessionId}`, {
+              const refreshRes = await fetch(`${API_BASE_URL}/api/messages/${sessionId}`, {
                 credentials: "include",
               });
               const refreshJson = await refreshRes.json();
@@ -301,8 +434,16 @@ export default function WorkspacePage() {
                   role: m.role,
                   content: m.content,
                   subTurn: m.subTurn,
+                  questionId: m.questionId,
                   timestamp: new Date(m.createdAt),
                 })));
+
+                // Sync currentStep based on unique questionIds in messages
+                const uniqueQuestions = new Set(refreshJson.data.map((m: any) => m.questionId));
+                const activeQCount = uniqueQuestions.size;
+                if (activeQCount > 0) {
+                  setCurrentStep(activeQCount);
+                }
               }
             }
           } else {
@@ -311,9 +452,29 @@ export default function WorkspacePage() {
         } else {
           await moveToNextQuestion();
         }
+      } else {
+        // Handle explicit rate limits or general server issues
+        const errorMsg: Message = {
+          id: `err-${Date.now()}`,
+          role: "AI",
+          content: `⚠️ Terjadi keterbatasan akses (Rate Limit) pada Dosen Penguji AI. Mohon tunggu 1-2 menit untuk memberikan kesempatan sistem memproses antrean. Anda dapat mencoba menekan tombol "Kirim Jawaban" kembali setelahnya.`,
+          subTurn: subTurn,
+          questionId: currentQuestion.id,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
       }
     } catch (err) {
       console.error(err);
+      const errorMsg: Message = {
+        id: `err-${Date.now()}`,
+        role: "AI",
+        content: "⚠️ Terjadi keterbatasan akses (Rate Limit) pada Dosen Penguji AI. Mohon tunggu 1-2 menit untuk memberikan kesempatan sistem memproses antrean. Anda dapat mencoba menekan tombol \"Kirim Jawaban\" kembali setelahnya.",
+        subTurn: subTurn,
+        questionId: currentQuestion.id,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsTyping(false);
     }
@@ -321,7 +482,7 @@ export default function WorkspacePage() {
 
   const handleEndSession = async () => {
     try {
-      await fetch(`http://localhost:3001/api/sessions/${sessionId}/complete`, {
+      await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/complete`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -335,6 +496,30 @@ export default function WorkspacePage() {
   const answeredCount = messages.filter((m) => m.role === "USER").length;
   const isEndEnabled = answeredCount >= 3;
 
+  const activeQuestions = questions.filter(q => messages.some(m => m.questionId === q.id));
+  const unmatchedMsgs = messages.filter(m => !questions.some(q => q.id === m.questionId));
+
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col items-center justify-center font-body relative overflow-hidden">
+        {/* Decorative Atmospheric Glows */}
+        <div className="absolute top-[-20%] left-[30%] w-[600px] h-[600px] rounded-full bg-indigo-200/30 blur-[120px] pointer-events-none z-0" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
+        
+        <div className="z-10 flex flex-col items-center gap-4 bg-white/60 backdrop-blur-md border border-[#C7C4D8]/30 p-8 rounded-3xl shadow-xl animate-fadeIn">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white animate-spin">
+            <span className="material-symbols-outlined text-2xl font-bold">
+              autorenew
+            </span>
+          </div>
+          <p className="text-sm font-heading font-extrabold text-[#3525cd] tracking-wide animate-pulse">
+            Memuat Workspace Simulasi...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-[#F8F9FF] text-[#0B1C30] flex flex-col font-body relative overflow-hidden">
       {/* Decorative Atmospheric Glows */}
@@ -342,7 +527,7 @@ export default function WorkspacePage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-purple-200/20 blur-[100px] pointer-events-none z-0" />
 
       {/* Top Workspace Header */}
-      <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 flex-shrink-0 z-50 animate-header">
+      <header className="w-full max-w-[1280px] mx-auto px-4 md:px-6 pt-4 flex-shrink-0 z-50 animate-header">
         <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-5">
             <a href="/dashboard" className="flex items-center gap-2 group">
@@ -429,11 +614,11 @@ export default function WorkspacePage() {
       </header>
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto p-4 md:p-6 gap-6 overflow-hidden h-[calc(100vh-120px)] min-h-0 z-10">
+      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto px-4 md:px-6 pb-6 md:pb-6 pt-4 md:pt-4 gap-6 overflow-hidden min-h-0 z-10">
         
         {/* Sidebar Panel */}
         <aside className="w-full md:w-68 flex-shrink-0 flex flex-col gap-6 bg-white border border-[#C7C4D8]/50 rounded-2xl p-6 shadow-sm justify-between md:h-full animate-card-1">
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fadeIn">
             
             {/* Session Info */}
             <div className="space-y-2">
@@ -487,7 +672,7 @@ export default function WorkspacePage() {
               <span className="text-[10px] font-heading font-extrabold tracking-widest text-gray-400 uppercase">
                 TEST SCOPE
               </span>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
                 {sessionData ? (
                   sessionData.sessionChapters.map((sc: any) => (
                     <div key={sc.id} className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
@@ -519,81 +704,174 @@ export default function WorkspacePage() {
           <div className="space-y-2 mt-4 md:mt-0 pt-4 border-t border-gray-50">
             <button
               onClick={handleEndSession}
-              disabled={!isEndEnabled}
-              className={`w-full py-3.5 rounded-xl text-white font-heading font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all duration-300 ${
-                isEndEnabled
-                  ? "bg-red-600 hover:bg-red-700 shadow-md shadow-red-600/10 hover:shadow-lg hover:shadow-red-600/25 active:scale-[0.98]"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
+              disabled={true}
+              className="w-full py-3.5 rounded-xl text-white bg-gray-200 text-gray-400 cursor-not-allowed font-heading font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all duration-300"
             >
               Akhiri Sesi Sidang
               <span className="material-symbols-outlined text-sm font-bold">logout</span>
             </button>
             <p className="text-[9px] text-gray-400 text-center font-bold">
-              {isEndEnabled
-                ? "Tombol aktif. Anda sudah menjawab 3+ pertanyaan."
-                : `Menjawab ${answeredCount}/3 pertanyaan untuk mengaktifkan.`}
+              Fitur laporan evaluasi sedang dipersiapkan.
             </p>
           </div>
         </aside>
 
         {/* Chat Console Area */}
-        <section className="flex-1 flex flex-col bg-white border border-[#C7C4D8]/50 rounded-2xl shadow-sm overflow-hidden h-full animate-card-2">
+        <section className="flex-1 flex flex-col bg-white border border-[#C7C4D8]/50 rounded-2xl shadow-sm overflow-hidden min-h-0 md:h-full animate-card-2">
           
           {/* Chat Bubble List (Scrollable) */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-gray-50/30">
-            {messages.map((msg) => {
-              const isAi = msg.role === "AI";
-              const isRebuttal = isAi && msg.subTurn > 0;
-              
+            
+            {/* Group messages by question */}
+            {activeQuestions.map((q, idx) => {
+              const questionMsgs = messages.filter((m) => m.questionId === q.id);
+
               return (
-                <div
-                  key={msg.id}
-                  className={`flex gap-3.5 max-w-[85%] ${
-                    isAi ? "mr-auto animate-slideRight" : "ml-auto flex-row-reverse animate-slideLeft"
+                <div 
+                  key={q.id} 
+                  className={`w-full flex flex-col gap-5 pb-6 ${
+                    idx < activeQuestions.length - 1 ? "border-b border-[#C7C4D8]/30" : ""
                   }`}
                 >
-                  {/* Avatar Icon */}
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm ${
-                      isRebuttal
-                        ? "bg-amber-50 border-amber-200/50 text-amber-600"
-                        : isAi
-                        ? "bg-indigo-50 border-indigo-100/50 text-[#3525cd]"
-                        : "bg-[#0B1C30] border-[#0B1C30] text-white"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-base font-bold">
-                      {isRebuttal ? "warning" : isAi ? "smart_toy" : "person"}
+                  {/* Pertanyaan Header */}
+                  <div className="w-full flex items-center gap-4 py-2 print:hidden animate-fadeIn">
+                    <div className="flex-grow h-[1px] bg-[#C7C4D8]/20" />
+                    <span className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-[#3525cd] bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100/40 shadow-sm">
+                      Pertanyaan Ke-{idx + 1}
                     </span>
+                    <div className="flex-grow h-[1px] bg-[#C7C4D8]/20" />
                   </div>
 
-                  {/* Bubble Content Card */}
+                  {/* Question Messages */}
+                  <div className="space-y-5">
+                    {questionMsgs.map((msg) => {
+                      const isAi = msg.role === "AI";
+                      const isRebuttal = isAi && msg.subTurn > 0;
+                      const isError = msg.content.startsWith("⚠️") || msg.content.includes("Rate Limit");
+
+                      return (
+                        <div key={msg.id} className="w-full flex flex-col gap-3">
+                          <div
+                            className={`flex gap-3.5 max-w-[85%] ${
+                              isAi ? "mr-auto animate-slideRight" : "ml-auto flex-row-reverse animate-slideLeft"
+                            }`}
+                          >
+                            {/* Avatar Icon */}
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm ${
+                                isError
+                                  ? "bg-red-50 border-red-200/50 text-[#EF4444]"
+                                  : isRebuttal
+                                  ? "bg-[#FFF7ED] border-[#F97316]/20 text-[#F97316]"
+                                  : isAi
+                                  ? "bg-indigo-50 border-indigo-100/50 text-[#3525cd]"
+                                  : "bg-white border-gray-200 text-gray-900"
+                              }`}
+
+                            >
+                              <span className="material-symbols-outlined text-base font-bold">
+                                {isError ? "error" : isRebuttal ? "gavel" : isAi ? "smart_toy" : "person"}
+                              </span>
+                            </div>
+
+                            {/* Bubble Content Card */}
+                            <div
+                              className={`p-4 rounded-2xl border text-xs leading-relaxed shadow-sm ${
+                                isError
+                                  ? "bg-[#FEF2F2] border-[#EF4444]/30 text-[#EF4444] font-medium"
+                                  : isRebuttal
+                                  ? "bg-[#F97316] border-none text-white font-medium"
+                                  : isAi
+                                  ? "bg-white border-[#C7C4D8]/40 text-[#0B1C30]"
+                                  : "bg-[#3525cd] text-white border-[#3525cd] shadow-md shadow-indigo-600/10"
+                              }`}
+                            >
+                              {isRebuttal && (
+                                <span className="block text-[9px] font-heading font-extrabold uppercase tracking-wide mb-1 text-orange-200">
+                                  Sanggahan ke - {msg.subTurn}/2
+                                </span>
+                              )}
+                              <p className="whitespace-pre-line font-medium leading-relaxed">{msg.content}</p>
+                              <span
+                                className={`block text-[9px] mt-2 text-right ${
+                                  isAi && !isRebuttal ? "text-gray-400" : isRebuttal ? "text-orange-100" : "text-white/60"
+                                }`}
+                              >
+                                {msg.timestamp.toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Unmatched / Orphaned messages */}
+            {unmatchedMsgs.map((msg) => {
+              const isAi = msg.role === "AI";
+              const isRebuttal = isAi && msg.subTurn > 0;
+              const isError = msg.content.startsWith("⚠️") || msg.content.includes("Rate Limit");
+
+              return (
+                <div key={msg.id} className="w-full flex flex-col gap-3">
                   <div
-                    className={`p-4 rounded-2xl border text-xs leading-relaxed shadow-sm ${
-                      isRebuttal
-                        ? "bg-amber-50/40 border-amber-200/50 text-amber-900 font-medium"
-                        : isAi
-                        ? "bg-white border-[#C7C4D8]/40 text-[#0B1C30]"
-                        : "bg-[#3525cd] text-white border-[#3525cd] shadow-md shadow-indigo-600/10"
+                    className={`flex gap-3.5 max-w-[85%] ${
+                      isAi ? "mr-auto animate-slideRight" : "ml-auto flex-row-reverse animate-slideLeft"
                     }`}
                   >
-                    {isRebuttal && (
-                      <span className="block text-[9px] font-heading font-extrabold uppercase tracking-wide mb-1 text-amber-700">
-                        SANGGAHAN DOSEN PENGUJI AI (Sanggahan {msg.subTurn}/2)
+                    {/* Avatar Icon */}
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm ${
+                        isError
+                          ? "bg-red-50 border-red-200/50 text-[#EF4444]"
+                          : isRebuttal
+                          ? "bg-[#FFF7ED] border-[#F97316]/20 text-[#F97316]"
+                          : isAi
+                          ? "bg-indigo-50 border-indigo-100/50 text-[#3525cd]"
+                          : "bg-white border-gray-200 text-gray-900"
+                      }`}
+
+                    >
+                      <span className="material-symbols-outlined text-base font-bold">
+                        {isError ? "error" : isRebuttal ? "gavel" : isAi ? "smart_toy" : "person"}
                       </span>
-                    )}
-                    <p className="whitespace-pre-line font-medium leading-relaxed">{msg.content}</p>
-                    <span
-                      className={`block text-[9px] mt-2 text-right ${
-                        isAi ? "text-gray-400" : "text-white/60"
+                    </div>
+
+                    {/* Bubble Content Card */}
+                    <div
+                      className={`p-4 rounded-2xl border text-xs leading-relaxed shadow-sm ${
+                        isError
+                          ? "bg-[#FEF2F2] border-[#EF4444]/30 text-[#EF4444] font-medium"
+                          : isRebuttal
+                          ? "bg-[#F97316] border-none text-white font-medium"
+                          : isAi
+                          ? "bg-white border-[#C7C4D8]/40 text-[#0B1C30]"
+                          : "bg-[#3525cd] text-white border-[#3525cd] shadow-md shadow-indigo-600/10"
                       }`}
                     >
-                      {msg.timestamp.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                      {isRebuttal && (
+                        <span className="block text-[9px] font-heading font-extrabold uppercase tracking-wide mb-1 text-orange-200">
+                          Sanggahan ke - {msg.subTurn}/2
+                        </span>
+                      )}
+                      <p className="whitespace-pre-line font-medium leading-relaxed">{msg.content}</p>
+                      <span
+                        className={`block text-[9px] mt-2 text-right ${
+                          isAi && !isRebuttal ? "text-gray-400" : isRebuttal ? "text-orange-100" : "text-white/60"
+                        }`}
+                      >
+                        {msg.timestamp.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
@@ -601,14 +879,19 @@ export default function WorkspacePage() {
 
             {/* AI Typing Indicator */}
             {isTyping && (
-              <div className="flex gap-3.5 max-w-[80%] mr-auto">
+              <div className="flex gap-3.5 max-w-[80%] mr-auto animate-fadeIn">
                 <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0 border border-indigo-100/50 text-[#3525cd] shadow-sm">
                   <span className="material-symbols-outlined text-base font-bold">smart_toy</span>
                 </div>
-                <div className="bg-white border border-[#C7C4D8]/40 p-4 rounded-2xl flex gap-1 items-center shadow-sm">
-                  <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                  <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                <div className="bg-[#F3F4F6] p-4 rounded-2xl flex flex-col gap-2 shadow-sm border border-gray-200/50">
+                  <div className="flex gap-1 items-center">
+                    <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-1.5 h-1.5 bg-[#3525cd] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                  <span className="text-[10px] font-semibold text-gray-500 animate-pulse">
+                    {typingMessage}
+                  </span>
                 </div>
               </div>
             )}

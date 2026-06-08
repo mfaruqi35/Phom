@@ -19,7 +19,19 @@ export const getMessagesBySessionService = async (sessionId: string) => {
 export const createMessageService = async (data: CreateMessageInput) => {
   const message = await prisma.message.create({ data });
 
-  if (data.role === "USER" && data.subTurn === 0) {
+  if (data.role === "AI" && data.subTurn === 0) {
+    const question = await prisma.question.findUnique({
+      where: { id: data.questionId },
+    });
+    if (question) {
+      await prisma.simulationSession.update({
+        where: { id: data.sessionId },
+        data: { currentStep: question.orderIndex },
+      });
+    }
+  }
+
+  if (data.role === "USER" && data.subTurn < 2) {
     const question = await prisma.question.findUnique({
       where: { id: data.questionId },
       include: {
@@ -44,23 +56,39 @@ export const createMessageService = async (data: CreateMessageInput) => {
         chapter_ids: chapterIds,
       });
 
-      await prisma.answerScore.create({
-        data: {
+      const existingScore = await prisma.answerScore.findFirst({
+        where: {
           sessionId: data.sessionId,
           questionId: data.questionId,
-          methodologyScore: evaluation.scores.methodology,
-          theoryScore: evaluation.scores.theory,
-          argumentScore: evaluation.scores.argument_strength,
-          isSatisfied: evaluation.is_satisfied,
-          rebuttal: evaluation.rebuttal ?? null,
-          feedback: evaluation.feedback ?? null,
         },
       });
 
-      await prisma.simulationSession.update({
-        where: { id: data.sessionId },
-        data: { currentStep: { increment: 1 } },
-      });
+      if (existingScore) {
+        await prisma.answerScore.update({
+          where: { id: existingScore.id },
+          data: {
+            methodologyScore: evaluation.scores.methodology,
+            theoryScore: evaluation.scores.theory,
+            argumentScore: evaluation.scores.argument_strength,
+            isSatisfied: evaluation.is_satisfied,
+            rebuttal: evaluation.rebuttal ?? null,
+            feedback: evaluation.feedback ?? null,
+          },
+        });
+      } else {
+        await prisma.answerScore.create({
+          data: {
+            sessionId: data.sessionId,
+            questionId: data.questionId,
+            methodologyScore: evaluation.scores.methodology,
+            theoryScore: evaluation.scores.theory,
+            argumentScore: evaluation.scores.argument_strength,
+            isSatisfied: evaluation.is_satisfied,
+            rebuttal: evaluation.rebuttal ?? null,
+            feedback: evaluation.feedback ?? null,
+          },
+        });
+      }
 
       return { message, evaluation };
     }

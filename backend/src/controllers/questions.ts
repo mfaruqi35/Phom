@@ -22,6 +22,19 @@ export const generateQuestions = async (c: Context) => {
       );
     }
 
+    if (!Array.isArray(body.chapterIds) || body.chapterIds.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "EMPTY_CHAPTERS",
+            message: "At least one chapter must be selected.",
+          },
+        },
+        400,
+      );
+    }
+
     const questions = await generateQuestionsService({
       sessionId: body.sessionId,
       documentId: body.documentId,
@@ -30,14 +43,14 @@ export const generateQuestions = async (c: Context) => {
     });
 
     return c.json({ success: true, data: questions }, 201);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error("Error generating questions:", error);
     return c.json(
       {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "An unexpected error occurred.",
+          message: error.message || "An unexpected error occurred.",
         },
       },
       500,

@@ -14,6 +14,10 @@ export const generateQuestionsService = async ({
   chapterIds,
   mode,
 }: GenerateQuestionsInput) => {
+  if (!chapterIds || chapterIds.length === 0) {
+    throw new Error("No chapters selected for question generation.");
+  }
+
   const result = await ragApi.generateQuestions({
     session_id: sessionId,
     document_id: documentId,
