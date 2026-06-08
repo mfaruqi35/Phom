@@ -5,6 +5,7 @@ interface CreateSessionInput {
   documentId: string;
   mode: "QUICK" | "STANDARD" | "DEEP";
   chapterIds: string[];
+  title: string;
 }
 
 export const createSessionService = async ({
@@ -12,12 +13,14 @@ export const createSessionService = async ({
   documentId,
   mode,
   chapterIds,
+  title,
 }: CreateSessionInput) => {
   const session = await prisma.simulationSession.create({
     data: {
       userId,
       documentId,
       mode,
+      title,
       totalQuestions: 0,
       currentStep: 0,
       isCompleted: false,
@@ -69,8 +72,6 @@ export const completeSessionService = async (id: string) => {
 };
 
 export const deleteSessionService = async (id: string) => {
-  // Hubungan foreign key di schema.prisma memiliki onDelete: Cascade,
-  // sehingga kita tidak perlu men-delete secara manual child records (message, answerScore, dll).
   return prisma.simulationSession.delete({
     where: { id },
   });

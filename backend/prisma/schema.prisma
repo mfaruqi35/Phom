@@ -63,6 +63,7 @@ model SimulationSession {
   id             String        @id @default(cuid())
   userId         String
   documentId     String
+  title          String?
   mode           SessionMode
   totalQuestions Int           @default(0)
   currentStep    Int           @default(0)

@@ -9,15 +9,14 @@ export const uploadDocuments = async (c: Context) => {
   try {
     const formData = await c.req.formData();
     const file = formData.get("file") as File;
-    const title = formData.get("title") as string;
 
-    if (!file || !title) {
+    if (!file) {
       return c.json(
         {
           success: false,
           error: {
             code: "MISSING_FIELDS",
-            message: "File and title are required.",
+            message: "File is required.",
           },
         },
         400,
@@ -39,7 +38,7 @@ export const uploadDocuments = async (c: Context) => {
 
     const user = c.get("user");
     const userId = user.id;
-    const document = await uploadDocumentService({ file, title, userId });
+    const document = await uploadDocumentService({ file, userId });
 
     return c.json({ success: true, data: document }, 201);
   } catch (error) {

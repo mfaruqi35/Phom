@@ -1,4 +1,5 @@
 import { Context } from "hono";
+import { prisma } from "../lib/prisma";
 import {
   createSessionService,
   getSessionService,
@@ -39,11 +40,18 @@ export const createSession = async (c: Context) => {
 
     const user = c.get("user");
     const userId = user.id;
+    const document = await prisma.document.findUnique({
+      where: { id: body.documentId },
+      select: { title: true },
+    });
+
+    const title = body.title || document?.title || "Sesi Simulasi";
     const session = await createSessionService({
       userId,
       documentId: body.documentId,
       mode: body.mode,
       chapterIds: body.chapterIds,
+      title,
     });
 
     return c.json({ success: true, data: session }, 201);

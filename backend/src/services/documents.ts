@@ -4,13 +4,11 @@ import { ragApi } from "../lib/rag";
 
 interface UploadDocumentInput {
   file: File;
-  title: string;
   userId: string;
 }
 
 export const uploadDocumentService = async ({
   file,
-  title,
   userId,
 }: UploadDocumentInput) => {
   const fileBuffer = await file.arrayBuffer();
@@ -33,7 +31,7 @@ export const uploadDocumentService = async ({
   const document = await prisma.document.create({
     data: {
       userId,
-      title,
+      title: file.name.replace(".pdf", ""),
       fileUrl: urlData.publicUrl,
       totalPages: 0,
       status: "PROCESSING",
@@ -49,11 +47,11 @@ export const uploadDocumentService = async ({
 
 async function triggerProcessing(documentId: string, fileUrl: string) {
   try {
-    // Parse Daftar Isi
     const parseResult = await ragApi.parseToc({
       document_id: documentId,
       file_url: fileUrl,
     });
+    console.log("parseToc result:", JSON.stringify(parseResult));
 
     // Simpan chapters ke database
     if (parseResult.chapters && parseResult.chapters.length > 0) {
