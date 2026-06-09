@@ -15,6 +15,40 @@ interface Chapter {
   pageEnd: string;
 }
 
+interface AnswerScore {
+  methodologyScore: number;
+  theoryScore: number;
+  argumentScore: number;
+}
+
+interface DocumentInfo {
+  title: string;
+}
+
+interface SessionChapterInfo {
+  id: string;
+  chapterId: string;
+}
+
+interface SessionItem {
+  id: string;
+  isCompleted: boolean;
+  mode: string;
+  createdAt: string;
+  answerScores: AnswerScore[];
+  document?: DocumentInfo;
+  sessionChapters?: SessionChapterInfo[];
+  totalQuestions?: number;
+}
+
+interface ApiChapter {
+  id: string;
+  label: string;
+  title: string;
+  pageStart: number;
+  pageEnd: number;
+}
+
 // ─── Mock data ────────────────────────────────────────────────────────────────
 const INITIAL_CHAPTERS: Chapter[] = [
   { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
@@ -73,7 +107,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: any[]) => {
+const calculateSessionScore = (answerScores: AnswerScore[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -129,7 +163,7 @@ export default function DashboardPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
-  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [recentSessions, setRecentSessions] = useState<SessionItem[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
 
   // Close dropdown on click outside
@@ -217,7 +251,7 @@ export default function DashboardPage() {
             );
             const chaptersJson = await chaptersRes.json();
             if (chaptersJson.success) {
-              const mapped = chaptersJson.data.map((ch: any) => ({
+              const mapped = chaptersJson.data.map((ch: ApiChapter) => ({
                 id: ch.id,
                 label: ch.label,
                 title: ch.title,
@@ -225,7 +259,7 @@ export default function DashboardPage() {
                 pageEnd: String(ch.pageEnd),
               }));
               setChapters(mapped);
-              setSelectedChapterIds(mapped.map((ch: any) => ch.id));
+              setSelectedChapterIds(mapped.map((ch: Chapter) => ch.id));
             }
           } else if (status === "FAILED") {
             clearInterval(interval);
@@ -318,7 +352,7 @@ export default function DashboardPage() {
     if (chapterId.length < 5) return;
 
     try {
-      const payload: any = {};
+      const payload: Record<string, string | number> = {};
       if (fields.title !== undefined) payload.title = fields.title;
       if (fields.pageStart !== undefined)
         payload.pageStart = Number(fields.pageStart);
@@ -445,7 +479,7 @@ export default function DashboardPage() {
         );
         const getJson = await getRes.json();
         if (getJson.success) {
-          const fetched = getJson.data.map((ch: any) => ({
+          const fetched = getJson.data.map((ch: ApiChapter) => ({
             id: ch.id,
             label: ch.label,
             title: ch.title,
@@ -453,7 +487,7 @@ export default function DashboardPage() {
             pageEnd: String(ch.pageEnd),
           }));
           setChapters(fetched);
-          setSelectedChapterIds(fetched.map((ch: any) => ch.id));
+          setSelectedChapterIds(fetched.map((ch: Chapter) => ch.id));
         }
       }
     } catch (err) {

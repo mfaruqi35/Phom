@@ -5,6 +5,31 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 
+interface AnswerScore {
+  methodologyScore: number;
+  theoryScore: number;
+  argumentScore: number;
+}
+
+interface DocumentInfo {
+  title: string;
+}
+
+interface SessionChapterInfo {
+  id: string;
+  chapterId: string;
+}
+
+interface SessionItem {
+  id: string;
+  isCompleted: boolean;
+  mode: string;
+  createdAt: string;
+  answerScores: AnswerScore[];
+  document?: DocumentInfo;
+  sessionChapters?: SessionChapterInfo[];
+}
+
 const getUserInitials = (name?: string) => {
   if (!name) return "US";
   const parts = name.trim().split(/\s+/);
@@ -12,7 +37,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: any[]) => {
+const calculateSessionScore = (answerScores: AnswerScore[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -45,7 +70,7 @@ export default function HistoryPage() {
     }
   }, [authSession, isPending, router]);
 
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);

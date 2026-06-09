@@ -4,7 +4,14 @@ import { prisma } from "../lib/prisma";
 export const getEvaluationService = async (sessionId: string) => {
   const session = await prisma.simulationSession.findUnique({
     where: { id: sessionId },
-    include: { document: true },
+    include: {
+      document: true,
+      sessionChapters: {
+        include: {
+          chapter: true,
+        },
+      },
+    },
   });
 
   if (!session) return null;
@@ -90,6 +97,17 @@ export const getEvaluationService = async (sessionId: string) => {
     }
   >();
 
+  if (session.sessionChapters) {
+    for (const sc of session.sessionChapters) {
+      chapterMap.set(sc.chapterId, {
+        chapterId: sc.chapterId,
+        label: sc.chapter.label,
+        title: sc.chapter.title,
+        scores: [],
+      });
+    }
+  }
+
   for (const score of answerScores) {
     const question = questions.find((q) => q.id === score.questionId);
     if (!question) continue;
@@ -114,6 +132,16 @@ export const getEvaluationService = async (sessionId: string) => {
   }
 
   const chapterBreakdown = Array.from(chapterMap.values()).map((ch) => {
+    if (ch.scores.length === 0) {
+      return {
+        chapterId: ch.chapterId,
+        label: ch.label,
+        title: ch.title,
+        score: null,
+        verdict: "BELUM DIUJI",
+      };
+    }
+
     const avg =
       ch.scores.reduce((sum, s) => {
         return (

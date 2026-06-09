@@ -22,8 +22,8 @@ interface ChapterBreakdown {
   chapterId: string;
   label: string;
   title: string;
-  score: number;
-  verdict: "LULUS" | "REVISI";
+  score: number | null;
+  verdict: "LULUS" | "REVISI" | "BELUM DIUJI";
 }
 
 interface EvaluationData {
@@ -61,6 +61,9 @@ const getUserInitials = (name?: string) => {
 
 const getChapterImprovisedFeedback = (label: string, verdict: string) => {
   const cleanLabel = label.toUpperCase().trim();
+  if (verdict === "BELUM DIUJI") {
+    return "Bab ini belum sempat diuji karena simulasi diakhiri lebih awal sebelum pertanyaan bab ini muncul.";
+  }
   const isPass = verdict === "LULUS";
 
   if (isPass) {
@@ -95,7 +98,7 @@ export default function EvaluationPage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const user = session?.user;
 
   // Profile Dropdown state
@@ -105,7 +108,9 @@ export default function EvaluationPage() {
   const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
     null,
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    return sessionId !== "mock-session" && !!sessionId;
+  });
   const [isStartingNewSession, setIsStartingNewSession] = useState(false);
 
   const handleRepeatSimulation = async () => {
@@ -166,7 +171,6 @@ export default function EvaluationPage() {
   // Fetch evaluation data
   useEffect(() => {
     if (!sessionId || sessionId === "mock-session") {
-      setIsLoading(false);
       return;
     }
 
@@ -466,8 +470,7 @@ export default function EvaluationPage() {
 
                 <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
                   Komite penguji AI menilai tingkat argumentasi dan penguasaan
-                  naskah Anda berada di kategori kelayakan **{eligibilityGrade}
-                  **.
+                  naskah Anda berada di kategori kelayakan <strong className="font-bold text-[#0B1C30]">{eligibilityGrade}</strong>.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 mt-1">
@@ -502,6 +505,7 @@ export default function EvaluationPage() {
                 evaluationData.chapterBreakdown.length > 0 ? (
                   evaluationData.chapterBreakdown.map((ch) => {
                     const isPass = ch.verdict === "LULUS";
+                    const isNotTested = ch.verdict === "BELUM DIUJI";
                     const summary = getChapterImprovisedFeedback(
                       ch.label,
                       ch.verdict,
@@ -517,7 +521,9 @@ export default function EvaluationPage() {
                           </span>
                           <span
                             className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border ${
-                              isPass
+                              isNotTested
+                                ? "bg-gray-50 text-gray-500 border-gray-200"
+                                : isPass
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
                                 : "bg-amber-50 text-amber-700 border-amber-200/50"
                             }`}
@@ -702,7 +708,7 @@ export default function EvaluationPage() {
 
                       {/* Pertanyaan */}
                       <div className="text-xs text-[#0B1C30] leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 font-semibold">
-                        <strong>Tanya:</strong> "{rec.question}"
+                        <strong>Tanya:</strong> &ldquo;{rec.question}&rdquo;
                       </div>
 
                       {/* Jawaban User */}
@@ -711,7 +717,7 @@ export default function EvaluationPage() {
                           JAWABAN DEFENSIF ANDA
                         </span>
                         <p className="italic leading-relaxed text-gray-600">
-                          "{rec.userAnswer || "Tidak ada jawaban."}"
+                          &ldquo;{rec.userAnswer || "Tidak ada jawaban."}&rdquo;
                         </p>
                       </div>
 
