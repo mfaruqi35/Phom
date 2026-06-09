@@ -61,10 +61,6 @@ export default function WorkspacePage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto scroll to bottom of chat
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
 
   // Set document title
   useEffect(() => {
@@ -590,10 +586,10 @@ export default function WorkspacePage() {
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                {getUserInitials(user?.name)}
+                {getUserInitials(user?.name || "Mahasiswa Phom")}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                {user?.name || "Dr. Aris Setiawan"}
+                {user?.name || "Mahasiswa Phom"}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -608,7 +604,7 @@ export default function WorkspacePage() {
                     {session ? "Akun Pengguna" : "Akun Demo"}
                   </p>
                   <p className="text-xs font-bold text-gray-800 truncate">
-                    {user?.email || "aris.setiawan@univ.ac.id"}
+                    {user?.email || "mahasiswa@phom.id"}
                   </p>
                 </div>
                 <a 

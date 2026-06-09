@@ -181,6 +181,22 @@ export default function DashboardPage() {
             credentials: "include",
           },
         );
+
+        if (!response.ok) {
+          console.log("Status check failed, response not ok:", response.status);
+          const resJson = await response.json().catch(() => ({}));
+          clearInterval(interval);
+          setIsProcessing(false);
+          setUploadedFile(null);
+          setCurrentDocumentId(null);
+          const code = resJson.error?.code;
+          const msg = code === "DOCUMENT_NOT_FOUND"
+            ? "File PDF yang diunggah ditolak karena bukan dokumen skripsi yang valid atau struktur bab tidak terdeteksi."
+            : (resJson.error?.message || "Terjadi kesalahan pemrosesan dokumen. Silakan coba lagi.");
+          setErrorMessage(msg);
+          return;
+        }
+
         const resJson = await response.json();
 
         if (resJson.success) {
@@ -236,6 +252,16 @@ export default function DashboardPage() {
               setProcessingPhase("Membuat representasi vektor...");
             }
           }
+        } else {
+          clearInterval(interval);
+          setIsProcessing(false);
+          setUploadedFile(null);
+          setCurrentDocumentId(null);
+          const code = resJson.error?.code;
+          const msg = code === "DOCUMENT_NOT_FOUND"
+            ? "File PDF yang diunggah ditolak karena bukan dokumen skripsi yang valid atau struktur bab tidak terdeteksi."
+            : (resJson.error?.message || "Terjadi kesalahan pemrosesan dokumen. Silakan coba lagi.");
+          setErrorMessage(msg);
         }
       } catch (err) {
         console.error("Polling error:", err);

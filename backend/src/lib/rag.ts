@@ -2,6 +2,7 @@ import ky from "ky";
 
 const ragClient = ky.create({
   prefix: process.env.RAG_SERVICE_URL ?? "http://127.0.0.1:8000",
+  timeout: 300000, // 5 minutes (300 seconds)
 });
 
 export const ragApi = {
