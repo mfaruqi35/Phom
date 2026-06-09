@@ -34,7 +34,7 @@ app.use(
   }),
 );
 
-app.all("/api/auth/**", (c) => {
+app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 
