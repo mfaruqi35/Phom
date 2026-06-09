@@ -2,16 +2,12 @@ import { createAuthClient } from "better-auth/react";
 
 export const getApiBaseUrl = () => {
   if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
-      const envUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-        return envUrl;
-      }
-      return "https://phom-backend.onrender.com";
-    }
+    // Client-side: use relative path to go through Next.js proxy/rewrites
+    return "";
   }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  // Server-side: must use absolute URL (Next.js server-side node fetch doesn't support relative URLs)
+  const isProd = process.env.NODE_ENV === "production";
+  return process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://phom-backend.onrender.com" : "http://localhost:3001");
 };
 
 export const authClient = createAuthClient({
