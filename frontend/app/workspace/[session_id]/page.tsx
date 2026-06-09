@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
 
 interface Message {
   id: string;
@@ -61,7 +61,48 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = getApiBaseUrl();
+
+interface SessionChapter {
+  id: string;
+  chapterId: string;
+  chapter: {
+    title: string;
+  };
+}
+
+interface SessionData {
+  id: string;
+  userId: string;
+  documentId: string;
+  mode: string;
+  totalQuestions: number;
+  currentStep: number;
+  isCompleted: boolean;
+  createdAt: string;
+  completedAt: string | null;
+  document?: {
+    title: string;
+  };
+  sessionChapters: SessionChapter[];
+}
+
+interface Question {
+  id: string;
+  sessionId: string;
+  chapterId: string;
+  content: string;
+  orderIndex: number;
+}
+
+interface DbMessage {
+  id: string;
+  role: "USER" | "AI";
+  content: string;
+  subTurn: number;
+  questionId: string;
+  createdAt: string;
+}
 
 const activeGenerations = new Set<string>();
 
@@ -72,6 +113,13 @@ export default function WorkspacePage() {
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+
+  // Client-side route guard: redirect to "/" if not logged in
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/");
+    }
+  }, [session, isPending, router]);
 
   const [docTitle, setDocTitle] = useState<string>("Full_Thesis_Final_Draft.pdf");
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
@@ -122,7 +170,7 @@ export default function WorkspacePage() {
   // Fetch session, questions, and messages on load
   useEffect(() => {
     if (!sessionId || sessionId === "mock-session") {
-      setIsLoading(false);
+      Promise.resolve().then(() => setIsLoading(false));
       return;
     }
 

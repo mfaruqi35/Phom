@@ -13,17 +13,26 @@ import { authMiddleware } from "./middleware/auth";
 
 const app = new Hono();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: (origin) => {
+      if (allowedOrigins.includes(origin)) {
+        return origin;
+      }
+      return "http://localhost:3000";
+    },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "x-better-auth-client"],
     credentials: true,
   }),
 );
-
-
 
 app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);

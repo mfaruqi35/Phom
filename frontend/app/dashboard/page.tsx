@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
+
+const API_BASE_URL = getApiBaseUrl();
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type SimulationMode = "quick" | "standard" | "deep";
@@ -186,7 +189,7 @@ export default function DashboardPage() {
     const fetchRecentSessions = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/sessions/user",
+          `${API_BASE_URL}/api/sessions/user`,
           {
             credentials: "include",
           },
@@ -210,7 +213,7 @@ export default function DashboardPage() {
     const interval = setInterval(async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/documents/${documentId}/status`,
+          `${API_BASE_URL}/api/documents/${documentId}/status`,
           {
             credentials: "include",
           },
@@ -244,7 +247,7 @@ export default function DashboardPage() {
 
             // Fetch chapters
             const chaptersRes = await fetch(
-              `http://localhost:3001/api/chapters/${documentId}`,
+              `${API_BASE_URL}/api/chapters/${documentId}`,
               {
                 credentials: "include",
               },
@@ -314,7 +317,7 @@ export default function DashboardPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3001/api/documents", {
+      const response = await fetch(`${API_BASE_URL}/api/documents`, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -359,7 +362,7 @@ export default function DashboardPage() {
       if (fields.pageEnd !== undefined)
         payload.pageEnd = Number(fields.pageEnd);
 
-      await fetch(`http://localhost:3001/api/chapters/${chapterId}`, {
+      await fetch(`${API_BASE_URL}/api/chapters/${chapterId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -416,7 +419,7 @@ export default function DashboardPage() {
 
     if (id.length >= 5) {
       try {
-        await fetch(`http://localhost:3001/api/chapters/${id}`, {
+        await fetch(`${API_BASE_URL}/api/chapters/${id}`, {
           method: "DELETE",
           credentials: "include",
         });
@@ -458,7 +461,7 @@ export default function DashboardPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/chapters/${currentDocumentId}`,
+        `${API_BASE_URL}/api/chapters/${currentDocumentId}`,
         {
           method: "POST",
           headers: {
@@ -472,7 +475,7 @@ export default function DashboardPage() {
       if (resJson.success) {
         // Fetch chapters again to get database IDs
         const getRes = await fetch(
-          `http://localhost:3001/api/chapters/${currentDocumentId}`,
+          `${API_BASE_URL}/api/chapters/${currentDocumentId}`,
           {
             credentials: "include",
           },
@@ -523,7 +526,7 @@ export default function DashboardPage() {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3001/api/sessions", {
+      const response = await fetch(`${API_BASE_URL}/api/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -595,7 +598,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
         <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <a href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
               <span
                 className="material-symbols-outlined text-xl font-bold"
@@ -607,7 +610,7 @@ export default function DashboardPage() {
             <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
               Phom
             </span>
-          </a>
+          </Link>
 
           <div className="flex items-center gap-4 relative" ref={dropdownRef}>
             {/* Active status pill */}
@@ -996,7 +999,7 @@ export default function DashboardPage() {
 
                 {chapters.length === 0 && (
                   <div className="py-8 text-center text-xs text-gray-400 font-medium">
-                    Belum ada bab dikonfigurasi. Klik "Tambah Bab" untuk
+                    Belum ada bab dikonfigurasi. Klik &ldquo;Tambah Bab&rdquo; untuk
                     memulai.
                   </div>
                 )}

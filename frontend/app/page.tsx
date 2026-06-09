@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { ReactLenis, useLenis } from "lenis/react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
@@ -296,8 +295,8 @@ export default function Home() {
                       Argument Blueprint
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      Pelajari pola sanggahan terbaik dengan 'Saran Perbaikan
-                      Kalimat' akademis untuk memposisikan ulang temuan riset
+                      Pelajari pola sanggahan terbaik dengan &ldquo;Saran Perbaikan
+                      Kalimat&rdquo; akademis untuk memposisikan ulang temuan riset
                       Anda secara kuat.
                     </p>
                   </div>
@@ -444,7 +443,7 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="bg-surface-raised p-4 rounded-lg border border-border/40 text-xs text-text-primary leading-relaxed">
-                      Definisi 'theoretical saturation' Anda pada Bab 3 belum
+                      Definisi &ldquo;theoretical saturation&rdquo; Anda pada Bab 3 belum
                       jelas. Anda menyebutkan wawancara selesai pada informan
                       ke-15, tapi apa indikator saturasi datanya?
                     </div>
@@ -713,7 +712,7 @@ export default function Home() {
                       <span className="material-symbols-outlined text-sm">
                         info
                       </span>
-                      Saran perbaikan: Hindari kata 'mungkin' saat
+                      Saran perbaikan: Hindari kata &ldquo;mungkin&rdquo; saat
                       mempertahankan data primer.
                     </div>
                   </div>
@@ -819,8 +818,8 @@ export default function Home() {
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Setelah sesi berakhir (minimal telah menjawab 3
                       pertanyaan), naskah penilaian berbobot dihitung secara
-                      instan. Pelajari peta kelemahan per bab serta 'Saran
-                      Perbaikan Kalimat' dari AI.
+                      instan. Pelajari peta kelemahan per bab serta &ldquo;Saran
+                      Perbaikan Kalimat&rdquo; dari AI.
                     </p>
                   </div>
                 </div>
@@ -1009,7 +1008,7 @@ export default function Home() {
 
               <div className="relative z-10 max-w-xl text-center md:text-left">
                 <h2 className="font-heading text-3xl font-extrabold text-white mb-4">
-                  Don't Leave Your Success to Chance
+                  Don&apos;t Leave Your Success to Chance
                 </h2>
                 <p className="font-body text-sm md:text-base text-primary-subtle mb-0 leading-relaxed">
                   Gabung bersama ribuan mahasiswa sukses lainnya yang menghadapi
