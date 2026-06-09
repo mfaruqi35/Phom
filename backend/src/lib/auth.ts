@@ -24,7 +24,26 @@ export const auth = betterAuth({
   },
   trustedOrigins: [process.env.FRONTEND_URL].filter(Boolean) as string[],
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL!,
+  baseURL: {
+    allowedHosts: [
+      "localhost:3000",
+      "localhost:3001",
+      "phom-thesis.vercel.app",
+      "phom-backend.onrender.com",
+      process.env.FRONTEND_URL,
+      process.env.BETTER_AUTH_URL,
+    ]
+      .filter(Boolean)
+      .map((url) => {
+        try {
+          const parsed = new URL(url!);
+          return parsed.host;
+        } catch {
+          return url!;
+        }
+      })
+      .filter(Boolean),
+  },
   advanced: {
     trustedProxyHeaders: true,
     useSecureCookies: isProd,
