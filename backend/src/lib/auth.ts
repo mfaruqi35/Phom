@@ -30,8 +30,8 @@ export const auth = betterAuth({
     trustedProxyHeaders: true,
     useSecureCookies: isProd,
     defaultCookieAttributes: {
-      sameSite: isProd ? "none" : undefined,
-      secure: isProd ? true : undefined,
+      sameSite: "none",
+      secure: true,
     },
     crossSubDomainCookies: {
       enabled: true,
