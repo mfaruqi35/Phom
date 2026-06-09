@@ -281,7 +281,7 @@ export default function EvaluationPage() {
   }
 
   // Dynamic Readiness mapping
-  const mentalScore = Math.max(50, Math.min(100, Math.round(overallScore + 5)));
+  const mentalScore = Math.max(30, Math.min(100, Math.round(overallScore + (5 - avgRebuttals * 5))));
   const getMentalLabel = (score: number) => {
     if (score >= 85) return "Sangat Siap";
     if (score >= 70) return "Siap";
@@ -289,18 +289,20 @@ export default function EvaluationPage() {
     return "Perlu Latihan";
   };
 
-  const getTechnicalLabel = (score: number) => {
-    if (score >= 85) return "Sangat Sesuai";
-    if (score >= 70) return "Sesuai";
+  const resilienceScore = Math.max(30, Math.min(100, Math.round(100 - (avgRebuttals * 25))));
+  const getResilienceLabel = (score: number) => {
+    if (score >= 85) return "Sangat Tangguh";
+    if (score >= 70) return "Tangguh";
     if (score >= 50) return "Cukup";
-    return "Perlu Perbaikan";
+    return "Mudah Goyah";
   };
 
-  const getMethodLabel = (score: number) => {
-    if (score >= 85) return "Sangat Tepat";
-    if (score >= 70) return "Tepat";
+  const consistencyScore = Math.max(30, Math.min(100, Math.round(overallScore - (Math.abs(methodologyScore - theoryScore) * 0.5))));
+  const getConsistencyLabel = (score: number) => {
+    if (score >= 85) return "Sangat Konsisten";
+    if (score >= 70) return "Konsisten";
     if (score >= 50) return "Cukup";
-    return "Kurang Tepat";
+    return "Fluktuatif";
   };
 
   const getReadinessNote = (score: number) => {
@@ -572,34 +574,34 @@ export default function EvaluationPage() {
                   </div>
                 </div>
 
-                {/* Technical Readiness */}
+                {/* Rebuttal Resilience */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                    <span>Kesesuaian Teori & Literatur</span>
+                    <span>Ketahanan Sanggahan (Resilience)</span>
                     <span className="text-[#3525cd]">
-                      {theoryScore}% ({getTechnicalLabel(theoryScore)})
+                      {resilienceScore}% ({getResilienceLabel(resilienceScore)})
                     </span>
                   </div>
                   <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-[#3525cd] rounded-full"
-                      style={{ width: `${theoryScore}%` }}
+                      style={{ width: `${resilienceScore}%` }}
                     ></div>
                   </div>
                 </div>
 
-                {/* Methodological Readiness */}
+                {/* Defense Consistency */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                    <span>Ketepatan Argumentasi Metode</span>
+                    <span>Konsistensi Pertahanan Argumen</span>
                     <span className="text-indigo-400">
-                      {methodologyScore}% ({getMethodLabel(methodologyScore)})
+                      {consistencyScore}% ({getConsistencyLabel(consistencyScore)})
                     </span>
                   </div>
                   <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-indigo-400 rounded-full"
-                      style={{ width: `${methodologyScore}%` }}
+                      style={{ width: `${consistencyScore}%` }}
                     ></div>
                   </div>
                 </div>

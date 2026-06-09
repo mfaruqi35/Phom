@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 
 interface AnswerScore {
@@ -56,7 +56,7 @@ const calculateSessionScore = (answerScores: AnswerScore[]) => {
   return Math.round(finalScore);
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = getApiBaseUrl();
 
 export default function HistoryPage() {
   const router = useRouter();
