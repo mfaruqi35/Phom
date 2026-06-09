@@ -2,9 +2,10 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 
-const isProd = process.env.BETTER_AUTH_URL && 
-  !process.env.BETTER_AUTH_URL.includes("localhost") && 
-  !process.env.BETTER_AUTH_URL.includes("127.0.0.1");
+const isProd = !!(process.env.NODE_ENV === "production" || 
+  (process.env.BETTER_AUTH_URL && 
+   !process.env.BETTER_AUTH_URL.includes("localhost") && 
+   !process.env.BETTER_AUTH_URL.includes("127.0.0.1")));
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -25,6 +26,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL!,
   advanced: {
     trustedProxyHeaders: true,
+    useSecureCookies: isProd,
     defaultCookieAttributes: {
       sameSite: isProd ? "none" : undefined,
       secure: isProd ? true : undefined,
