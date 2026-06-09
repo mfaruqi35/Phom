@@ -22,6 +22,8 @@ const getUserInitials = (name?: string) => {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+const activeGenerations = new Set<string>();
+
 export default function WorkspacePage() {
   const params = useParams();
   const router = useRouter();
@@ -117,6 +119,12 @@ export default function WorkspacePage() {
 
         // 3. If no questions generated yet, trigger LLM generation via API
         if (currentQuestions.length === 0) {
+          if (activeGenerations.has(sessionId)) {
+            console.log("Already generating questions for session:", sessionId);
+            return;
+          }
+          activeGenerations.add(sessionId);
+
           setTypingMessage("sedang mempersiapkan pertanyaan");
           setIsTyping(true);
           
@@ -174,6 +182,7 @@ export default function WorkspacePage() {
                 }]);
               }
             } else {
+              activeGenerations.delete(sessionId);
               const errorText = genJson.error?.message || "Gagal membuat pertanyaan sidang skripsi.";
               console.warn("Questions generation skipped/failed:", errorText);
               setMessages([{
@@ -186,6 +195,7 @@ export default function WorkspacePage() {
               }]);
             }
           } catch (genErr: any) {
+            activeGenerations.delete(sessionId);
             console.warn("Failed to generate questions:", genErr?.message || genErr);
             setMessages([{
               id: `err-init-${Date.now()}`,
@@ -321,13 +331,24 @@ export default function WorkspacePage() {
         setIsTyping(false);
       }
     } else {
+      setTypingMessage("Sedang mengevaluasi");
+      setIsTyping(true);
+      
       try {
         await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/complete`, {
           method: "PATCH",
           credentials: "include",
         });
+        
+        // Wait 2.5 seconds to let the user see the "Sedang mengevaluasi" loading state
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        
+        // Update sessionData locally to reflect completion
+        setSessionData((prev: any) => prev ? { ...prev, isCompleted: true } : null);
       } catch (e) {
         console.error("Failed to complete session:", e);
+      } finally {
+        setIsTyping(false);
       }
     }
   };
@@ -494,7 +515,7 @@ export default function WorkspacePage() {
 
   // Condition from AGENTS.md: Minimum 3 questions answered to allow ending session
   const answeredCount = messages.filter((m) => m.role === "USER").length;
-  const isEndEnabled = answeredCount >= 3;
+  const canEndSession = sessionData?.isCompleted || answeredCount >= 3;
 
   const activeQuestions = questions.filter(q => messages.some(m => m.questionId === q.id));
   const unmatchedMsgs = messages.filter(m => !questions.some(q => q.id === m.questionId));
@@ -614,7 +635,7 @@ export default function WorkspacePage() {
       </header>
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto px-4 md:px-6 pb-6 md:pb-6 pt-4 md:pt-4 gap-6 overflow-hidden min-h-0 z-10">
+      <div className="flex-1 flex flex-col md:flex-row max-w-[1280px] w-full mx-auto px-4 md:px-6 pb-6 md:pb-6 pt-6 md:pt-8 gap-6 overflow-hidden min-h-0 z-10">
         
         {/* Sidebar Panel */}
         <aside className="w-full md:w-68 flex-shrink-0 flex flex-col gap-6 bg-white border border-[#C7C4D8]/50 rounded-2xl p-6 shadow-sm justify-between md:h-full animate-card-1">
@@ -704,14 +725,20 @@ export default function WorkspacePage() {
           <div className="space-y-2 mt-4 md:mt-0 pt-4 border-t border-gray-50">
             <button
               onClick={handleEndSession}
-              disabled={true}
-              className="w-full py-3.5 rounded-xl text-white bg-gray-200 text-gray-400 cursor-not-allowed font-heading font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all duration-300"
+              disabled={!canEndSession}
+              className={`w-full py-3.5 rounded-xl font-heading font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all duration-300 ${
+                canEndSession
+                  ? "bg-gradient-to-r from-[#3525cd] to-[#6f3dd9] text-white hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-indigo-600/10 cursor-pointer"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
             >
               Akhiri Sesi Sidang
               <span className="material-symbols-outlined text-sm font-bold">logout</span>
             </button>
-            <p className="text-[9px] text-gray-400 text-center font-bold">
-              Fitur laporan evaluasi sedang dipersiapkan.
+            <p className="text-[9px] text-gray-400 text-center font-bold font-heading">
+              {canEndSession
+                ? "Tekan untuk mengakhiri sesi dan melihat laporan evaluasi."
+                : "Minimal jawab 3 pertanyaan untuk mengakhiri sesi."}
             </p>
           </div>
         </aside>
@@ -877,6 +904,36 @@ export default function WorkspacePage() {
               );
             })}
 
+            {/* Special completion card when session is completed */}
+            {sessionData?.isCompleted && (
+              <div className="w-full flex flex-col gap-5 pb-6 animate-fadeIn">
+                <div className="w-full flex items-center gap-4 py-2 print:hidden">
+                  <div className="flex-grow h-[1px] bg-emerald-100" />
+                  <span className="text-[10px] font-heading font-extrabold uppercase tracking-widest text-[#059669] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 shadow-sm">
+                    Simulasi Selesai
+                  </span>
+                  <div className="flex-grow h-[1px] bg-emerald-100" />
+                </div>
+                
+                <div className="w-full flex gap-3.5 max-w-[85%] mr-auto animate-slideRight">
+                  {/* AI Avatar */}
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border shadow-sm bg-emerald-50 border-emerald-100/50 text-[#059669]">
+                    <span className="material-symbols-outlined text-base font-bold">
+                      check_circle
+                    </span>
+                  </div>
+                  
+                  {/* AI Bubble Card */}
+                  <div className="p-5 rounded-2xl border border-emerald-100 bg-white text-xs leading-relaxed shadow-sm text-gray-800">
+                    <p className="font-semibold text-gray-900 text-sm mb-1 font-heading">Sidang Skripsi Selesai!</p>
+                    <p className="font-medium text-gray-600">
+                      Seluruh pertanyaan dan sanggahan Anda telah berhasil direkam. Dosen Penguji AI telah menyelesaikan evaluasi terhadap naskah, metodologi, teori, dan argumen akademik Anda. Silakan lihat laporan lengkap Anda di panel bawah atau tombol di pojok kiri bawah.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* AI Typing Indicator */}
             {isTyping && (
               <div className="flex gap-3.5 max-w-[80%] mr-auto animate-fadeIn">
@@ -901,46 +958,66 @@ export default function WorkspacePage() {
 
           {/* Chat Input Bar Footer */}
           <footer className="border-t border-[#C7C4D8]/40 p-4 bg-white">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <div className="relative">
-                <textarea
-                  rows={3}
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value.slice(0, 1000))}
-                  placeholder="Ketik argumen jawaban akademik Anda di sini secara lengkap..."
-                  className="w-full rounded-2xl border border-[#C7C4D8]/60 bg-white p-4 pr-12 text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-[#3525cd] focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none shadow-sm"
-                />
-                
-                {/* Character Counter */}
-                <span className="absolute bottom-3.5 right-4 text-[9px] font-bold text-gray-400 font-mono">
-                  {inputText.length} / 1000
-                </span>
+            {sessionData?.isCompleted ? (
+              <div className="flex flex-col items-center justify-center py-4 px-6 bg-emerald-50/40 rounded-2xl border border-emerald-100/60 text-center gap-3 animate-fadeIn">
+                <div className="flex items-center gap-2 text-[#059669]">
+                  <span className="material-symbols-outlined text-lg font-bold animate-spin" style={{ animationDuration: '3s' }}>sync</span>
+                  <span className="text-xs font-bold uppercase tracking-wider font-heading">Hasil Ujian Dievaluasi</span>
+                </div>
+                <p className="text-[11px] text-gray-500 font-semibold max-w-md leading-relaxed">
+                  Terima kasih telah menyelesaikan seluruh rangkaian simulasi sidang skripsi. Laporan evaluasi telah selesai dianalisis dan siap untuk dilihat.
+                </p>
+                <a
+                  href={`/evaluation/${sessionId}`}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-heading font-extrabold text-xs flex items-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all shadow-emerald-600/10"
+                >
+                  Buka Laporan Evaluasi
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
               </div>
-
-              <div className="flex justify-between items-center gap-4">
-                <div className="flex items-center gap-1.5 text-gray-400">
-                  <span className="material-symbols-outlined text-sm">info</span>
-                  <span className="text-[10px] font-semibold leading-none">
-                    {subTurn < 2
-                      ? `Pertanyaan ini aktif. Penguji memiliki ${2 - subTurn} kesempatan sanggahan.`
-                      : "Sanggahan maksimal tercapai. Jawaban berikutnya akan memicu pertanyaan baru."}
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value.slice(0, 1000))}
+                    placeholder="Ketik argumen jawaban akademik Anda di sini secara lengkap..."
+                    disabled={isTyping}
+                    className="w-full rounded-2xl border border-[#C7C4D8]/60 bg-white p-4 pr-12 text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none focus:border-[#3525cd] focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none shadow-sm disabled:bg-gray-50 disabled:text-gray-400"
+                  />
+                  
+                  {/* Character Counter */}
+                  <span className="absolute bottom-3.5 right-4 text-[9px] font-bold text-gray-400 font-mono">
+                    {inputText.length} / 1000
                   </span>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={!inputText.trim() || isTyping}
-                  className={`px-6 py-2.5 rounded-xl text-white font-heading font-extrabold text-xs flex items-center gap-1.5 transition-all duration-300 ${
-                    inputText.trim() && !isTyping
-                      ? "bg-[#3525cd] hover:bg-[#281baf] shadow-md shadow-indigo-600/15 hover:shadow-lg hover:shadow-indigo-600/25 active:scale-[0.98]"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  Kirim Jawaban
-                  <span className="material-symbols-outlined text-sm font-bold">send</span>
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="flex items-center gap-1.5 text-gray-400">
+                    <span className="material-symbols-outlined text-sm">info</span>
+                    <span className="text-[10px] font-semibold leading-none">
+                      {subTurn < 2
+                        ? `Pertanyaan ini aktif. Penguji memiliki ${2 - subTurn} kesempatan sanggahan.`
+                        : "Sanggahan maksimal tercapai. Jawaban berikutnya akan memicu pertanyaan baru."}
+                    </span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!inputText.trim() || isTyping}
+                    className={`px-6 py-2.5 rounded-xl text-white font-heading font-extrabold text-xs flex items-center gap-1.5 transition-all duration-300 ${
+                      inputText.trim() && !isTyping
+                        ? "bg-[#3525cd] hover:bg-[#281baf] shadow-md shadow-indigo-600/15 hover:shadow-lg hover:shadow-indigo-600/25 active:scale-[0.98]"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Kirim Jawaban
+                    <span className="material-symbols-outlined text-sm font-bold">send</span>
+                  </button>
+                </div>
+              </form>
+            )}
           </footer>
         </section>
       </div>
