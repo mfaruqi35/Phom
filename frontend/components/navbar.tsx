@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface NavbarProps {
   scrolled: boolean;
@@ -20,7 +21,7 @@ export default function Navbar({ scrolled, openAuthModal }: NavbarProps) {
     >
       <div className="flex justify-between items-center w-full">
         {/* Brand Logo */}
-        <a href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform duration-300 shadow-md shadow-indigo-600/20">
             <span
               className="material-symbols-outlined text-xl font-bold"
@@ -32,7 +33,7 @@ export default function Navbar({ scrolled, openAuthModal }: NavbarProps) {
           <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
             Phom
           </span>
-        </a>
+        </Link>
 
         {/* Navigation Links (Desktop) */}
         <div className="hidden md:flex items-center gap-8">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -15,32 +16,32 @@ interface Chapter {
   pageEnd: string;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-const INITIAL_CHAPTERS: Chapter[] = [
-  { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
-  {
-    id: "2",
-    label: "II",
-    title: "Tinjauan Pustaka",
-    pageStart: "11",
-    pageEnd: "25",
-  },
-  {
-    id: "3",
-    label: "III",
-    title: "Metodologi",
-    pageStart: "26",
-    pageEnd: "45",
-  },
-  {
-    id: "4",
-    label: "IV",
-    title: "Hasil & Pembahasan",
-    pageStart: "",
-    pageEnd: "",
-  },
-  { id: "5", label: "V", title: "Penutupan", pageStart: "", pageEnd: "" },
-];
+interface DbChapter {
+  id: string;
+  label: string;
+  title: string;
+  pageStart: number;
+  pageEnd: number;
+}
+
+interface AnswerScoreItem {
+  methodologyScore: number;
+  theoryScore: number;
+  argumentScore: number;
+}
+
+interface RecentSession {
+  id: string;
+  mode: string;
+  createdAt: string;
+  isCompleted: boolean;
+  totalQuestions?: number;
+  sessionChapters?: { chapterId: string }[];
+  document?: {
+    title: string;
+  };
+  answerScores: AnswerScoreItem[];
+}
 
 const SIMULATION_MODES = [
   {
@@ -73,7 +74,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: any[]) => {
+const calculateSessionScore = (answerScores: AnswerScoreItem[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -129,7 +130,7 @@ export default function DashboardPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
-  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
 
   // Close dropdown on click outside
@@ -201,7 +202,7 @@ export default function DashboardPage() {
             );
             const chaptersJson = await chaptersRes.json();
             if (chaptersJson.success) {
-              const mapped = chaptersJson.data.map((ch: any) => ({
+              const mapped = chaptersJson.data.map((ch: DbChapter) => ({
                 id: ch.id,
                 label: ch.label,
                 title: ch.title,
@@ -209,7 +210,7 @@ export default function DashboardPage() {
                 pageEnd: String(ch.pageEnd),
               }));
               setChapters(mapped);
-              setSelectedChapterIds(mapped.map((ch: any) => ch.id));
+              setSelectedChapterIds(mapped.map((ch: Chapter) => ch.id));
             }
           } else if (status === "FAILED") {
             clearInterval(interval);
@@ -292,7 +293,7 @@ export default function DashboardPage() {
     if (chapterId.length < 5) return;
 
     try {
-      const payload: any = {};
+      const payload: { title?: string; pageStart?: number; pageEnd?: number } = {};
       if (fields.title !== undefined) payload.title = fields.title;
       if (fields.pageStart !== undefined)
         payload.pageStart = Number(fields.pageStart);
@@ -419,7 +420,7 @@ export default function DashboardPage() {
         );
         const getJson = await getRes.json();
         if (getJson.success) {
-          const fetched = getJson.data.map((ch: any) => ({
+          const fetched = getJson.data.map((ch: DbChapter) => ({
             id: ch.id,
             label: ch.label,
             title: ch.title,
@@ -427,7 +428,7 @@ export default function DashboardPage() {
             pageEnd: String(ch.pageEnd),
           }));
           setChapters(fetched);
-          setSelectedChapterIds(fetched.map((ch: any) => ch.id));
+          setSelectedChapterIds(fetched.map((ch: Chapter) => ch.id));
         }
       }
     } catch (err) {
@@ -535,7 +536,7 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="w-full max-w-[1240px] mx-auto px-4 pt-4 sticky top-0 z-50 animate-header">
         <div className="w-full bg-white/80 backdrop-blur-md border border-[#C7C4D8]/40 px-6 py-3 rounded-full flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <a href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3525cd] to-[#6f3dd9] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-md shadow-indigo-600/20">
               <span
                 className="material-symbols-outlined text-xl font-bold"
@@ -547,7 +548,7 @@ export default function DashboardPage() {
             <span className="text-xl font-heading font-extrabold text-[#3525cd] tracking-tight">
               Phom
             </span>
-          </a>
+          </Link>
 
           <div className="flex items-center gap-4 relative" ref={dropdownRef}>
             {/* Active status pill */}
@@ -936,7 +937,7 @@ export default function DashboardPage() {
 
                 {chapters.length === 0 && (
                   <div className="py-8 text-center text-xs text-gray-400 font-medium">
-                    Belum ada bab dikonfigurasi. Klik "Tambah Bab" untuk
+                    Belum ada bab dikonfigurasi. Klik &ldquo;Tambah Bab&rdquo; untuk
                     memulai.
                   </div>
                 )}

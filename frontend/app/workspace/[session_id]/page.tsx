@@ -22,6 +22,47 @@ const getUserInitials = (name?: string) => {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+interface SessionChapter {
+  id: string;
+  chapterId: string;
+  chapter: {
+    title: string;
+  };
+}
+
+interface SessionData {
+  id: string;
+  userId: string;
+  documentId: string;
+  mode: string;
+  totalQuestions: number;
+  currentStep: number;
+  isCompleted: boolean;
+  createdAt: string;
+  completedAt: string | null;
+  document?: {
+    title: string;
+  };
+  sessionChapters: SessionChapter[];
+}
+
+interface Question {
+  id: string;
+  sessionId: string;
+  chapterId: string;
+  content: string;
+  orderIndex: number;
+}
+
+interface DbMessage {
+  id: string;
+  role: "USER" | "AI";
+  content: string;
+  subTurn: number;
+  questionId: string;
+  createdAt: string;
+}
+
 const activeGenerations = new Set<string>();
 
 export default function WorkspacePage() {
@@ -29,12 +70,12 @@ export default function WorkspacePage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const user = session?.user;
 
   const [docTitle, setDocTitle] = useState<string>("Full_Thesis_Final_Draft.pdf");
-  const [sessionData, setSessionData] = useState<any>(null);
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
@@ -74,7 +115,7 @@ export default function WorkspacePage() {
   // Fetch session, questions, and messages on load
   useEffect(() => {
     if (!sessionId || sessionId === "mock-session") {
-      setIsLoading(false);
+      Promise.resolve().then(() => setIsLoading(false));
       return;
     }
 
@@ -137,7 +178,7 @@ export default function WorkspacePage() {
               body: JSON.stringify({
                 sessionId,
                 documentId: sessionJson.data.documentId,
-                chapterIds: sessionJson.data.sessionChapters.map((sc: any) => sc.chapterId),
+                chapterIds: sessionJson.data.sessionChapters.map((sc: SessionChapter) => sc.chapterId),
                 mode: sessionJson.data.mode,
               }),
               credentials: "include",
@@ -149,10 +190,10 @@ export default function WorkspacePage() {
               currentQuestions = genJson.data;
               setTotalQuestions(genJson.data.length);
               
-              setSessionData((prev: any) => ({
+              setSessionData((prev: SessionData | null) => prev ? ({
                 ...prev,
                 totalQuestions: genJson.data.length,
-              }));
+              }) : null);
 
               // Initialize the first pre-generated question in DB
               const firstQuestion = genJson.data[0];
@@ -194,13 +235,14 @@ export default function WorkspacePage() {
                 timestamp: new Date(),
               }]);
             }
-          } catch (genErr: any) {
+          } catch (genErr: unknown) {
             activeGenerations.delete(sessionId);
-            console.warn("Failed to generate questions:", genErr?.message || genErr);
+            const errMsg = genErr instanceof Error ? genErr.message : String(genErr);
+            console.warn("Failed to generate questions:", errMsg);
             setMessages([{
               id: `err-init-${Date.now()}`,
               role: "AI",
-              content: `⚠️ Gagal mempersiapkan pertanyaan. ${genErr.message || "Koneksi terputus atau terjadi kesalahan server. Silakan muat ulang halaman ini."}`,
+              content: `⚠️ Gagal mempersiapkan pertanyaan. ${errMsg || "Koneksi terputus atau terjadi kesalahan server. Silakan muat ulang halaman ini."}`,
               subTurn: 0,
               questionId: "",
               timestamp: new Date(),
@@ -217,7 +259,7 @@ export default function WorkspacePage() {
           if (messagesJson.success) {
             const fetchedMsgs = messagesJson.data;
             if (fetchedMsgs.length > 0) {
-              setMessages(fetchedMsgs.map((m: any) => ({
+              setMessages(fetchedMsgs.map((m: DbMessage) => ({
                 id: m.id,
                 role: m.role,
                 content: m.content,
@@ -308,7 +350,7 @@ export default function WorkspacePage() {
           });
           const refreshJson = await refreshRes.json();
           if (refreshJson.success) {
-            setMessages(refreshJson.data.map((m: any) => ({
+            setMessages(refreshJson.data.map((m: DbMessage) => ({
               id: m.id,
               role: m.role,
               content: m.content,
@@ -318,7 +360,7 @@ export default function WorkspacePage() {
             })));
 
             // Re-sync currentStep dynamically based on unique questionIds in messages
-            const uniqueQuestions = new Set(refreshJson.data.map((m: any) => m.questionId));
+            const uniqueQuestions = new Set(refreshJson.data.map((m: DbMessage) => m.questionId));
             const activeQCount = uniqueQuestions.size;
             if (activeQCount > 0) {
               setCurrentStep(activeQCount);
@@ -344,7 +386,7 @@ export default function WorkspacePage() {
         await new Promise((resolve) => setTimeout(resolve, 2500));
         
         // Update sessionData locally to reflect completion
-        setSessionData((prev: any) => prev ? { ...prev, isCompleted: true } : null);
+        setSessionData((prev: SessionData | null) => prev ? { ...prev, isCompleted: true } : null);
       } catch (e) {
         console.error("Failed to complete session:", e);
       } finally {
@@ -402,7 +444,7 @@ export default function WorkspacePage() {
         });
         const messagesJson = await messagesRes.json();
         if (messagesJson.success) {
-          setMessages(messagesJson.data.map((m: any) => ({
+          setMessages(messagesJson.data.map((m: DbMessage) => ({
             id: m.id,
             role: m.role,
             content: m.content,
@@ -412,7 +454,7 @@ export default function WorkspacePage() {
           })));
 
           // Sync currentStep based on unique questionIds in messages
-          const uniqueQuestions = new Set(messagesJson.data.map((m: any) => m.questionId));
+          const uniqueQuestions = new Set(messagesJson.data.map((m: DbMessage) => m.questionId));
           const activeQCount = uniqueQuestions.size;
           if (activeQCount > 0) {
             setCurrentStep(activeQCount);
@@ -450,7 +492,7 @@ export default function WorkspacePage() {
               });
               const refreshJson = await refreshRes.json();
               if (refreshJson.success) {
-                setMessages(refreshJson.data.map((m: any) => ({
+                setMessages(refreshJson.data.map((m: DbMessage) => ({
                   id: m.id,
                   role: m.role,
                   content: m.content,
@@ -460,7 +502,7 @@ export default function WorkspacePage() {
                 })));
 
                 // Sync currentStep based on unique questionIds in messages
-                const uniqueQuestions = new Set(refreshJson.data.map((m: any) => m.questionId));
+                const uniqueQuestions = new Set(refreshJson.data.map((m: DbMessage) => m.questionId));
                 const activeQCount = uniqueQuestions.size;
                 if (activeQCount > 0) {
                   setCurrentStep(activeQCount);
@@ -695,7 +737,7 @@ export default function WorkspacePage() {
               </span>
               <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
                 {sessionData ? (
-                  sessionData.sessionChapters.map((sc: any) => (
+                  sessionData.sessionChapters.map((sc: SessionChapter) => (
                     <div key={sc.id} className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd] flex-shrink-0"></span>
                       <span className="truncate" title={sc.chapter.title}>{sc.chapter.title}</span>

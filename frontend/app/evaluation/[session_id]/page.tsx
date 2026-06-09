@@ -95,7 +95,7 @@ export default function EvaluationPage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const user = session?.user;
 
   // Profile Dropdown state
@@ -124,7 +124,7 @@ export default function EvaluationPage() {
   // Fetch evaluation data
   useEffect(() => {
     if (!sessionId || sessionId === "mock-session") {
-      setIsLoading(false);
+      Promise.resolve().then(() => setIsLoading(false));
       return;
     }
 
@@ -658,7 +658,7 @@ export default function EvaluationPage() {
 
                       {/* Pertanyaan */}
                       <div className="text-xs text-[#0B1C30] leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 font-semibold">
-                        <strong>Tanya:</strong> "{rec.question}"
+                        <strong>Tanya:</strong> &ldquo;{rec.question}&rdquo;
                       </div>
 
                       {/* Jawaban User */}
@@ -667,7 +667,7 @@ export default function EvaluationPage() {
                           JAWABAN DEFENSIF ANDA
                         </span>
                         <p className="italic leading-relaxed text-gray-600">
-                          "{rec.userAnswer || "Tidak ada jawaban."}"
+                          &ldquo;{rec.userAnswer || "Tidak ada jawaban."}&rdquo;
                         </p>
                       </div>
 

@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-
-type UserRole = "user";
 
 interface SlidingAuthCardProps {
   initialMode: "signin" | "signup";
@@ -16,12 +14,13 @@ export default function SlidingAuthCard({
   onClose,
 }: SlidingAuthCardProps) {
   const router = useRouter();
+  const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
 
-  // Sync state if initialMode changes
-  useEffect(() => {
+  if (initialMode !== prevInitialMode) {
+    setPrevInitialMode(initialMode);
     setIsSignUp(initialMode === "signup");
-  }, [initialMode]);
+  }
 
   // Sign In Form States
   const [signInEmail, setSignInEmail] = useState("");
@@ -33,7 +32,6 @@ export default function SlidingAuthCard({
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
-  const [signUpRole, setSignUpRole] = useState<UserRole>("user");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -135,9 +133,10 @@ export default function SlidingAuthCard({
         provider: "google",
         callbackURL: `${window.location.origin}/dashboard`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false);
-      setError(err.message || "Gagal masuk dengan Google.");
+      const errMsg = err instanceof Error ? err.message : "Gagal masuk dengan Google.";
+      setError(errMsg);
     }
   };
 

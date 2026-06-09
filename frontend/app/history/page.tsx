@@ -4,6 +4,24 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
+interface AnswerScoreItem {
+  methodologyScore: number;
+  theoryScore: number;
+  argumentScore: number;
+}
+
+interface SessionItem {
+  id: string;
+  mode: string;
+  createdAt: string;
+  isCompleted: boolean;
+  sessionChapters?: { chapterId: string }[];
+  document?: {
+    title: string;
+  };
+  answerScores: AnswerScoreItem[];
+}
+
 const getUserInitials = (name?: string) => {
   if (!name) return "US";
   const parts = name.trim().split(/\s+/);
@@ -11,7 +29,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: any[]) => {
+const calculateSessionScore = (answerScores: AnswerScoreItem[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -42,7 +60,7 @@ export default function HistoryPage() {
     }
   }, [authSession, isPending, router]);
 
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Profile Dropdown state
