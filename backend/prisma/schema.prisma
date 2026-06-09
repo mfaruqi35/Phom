@@ -11,10 +11,16 @@ model User {
   email         String     @unique
   name          String
   passwordHash  String?
+  emailVerified Boolean    @default(false)
+  image         String?
   createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
-  documents     Document[]
-  sessions      Session[]
+  documents         Document[]
+  simulationSessions SimulationSession[]
+
+  accounts Account[]
+  sessions Session[]
 
   @@map("users")
 }
@@ -28,10 +34,10 @@ model Document {
   status      DocumentStatus @default(PROCESSING)
   createdAt   DateTime   @default(now())
 
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chapters    Chapter[]
-  sessions    Session[]
-  chunks      DocumentChunk[]
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapters           Chapter[]
+  simulationSessions SimulationSession[]
+  chunks             DocumentChunk[]
 
   @@map("documents")
 }
@@ -53,10 +59,11 @@ model Chapter {
   @@map("chapters")
 }
 
-model Session {
+model SimulationSession {
   id             String        @id @default(cuid())
   userId         String
   documentId     String
+  title          String?
   mode           SessionMode
   totalQuestions Int           @default(0)
   currentStep    Int           @default(0)
@@ -64,8 +71,8 @@ model Session {
   createdAt      DateTime      @default(now())
   completedAt    DateTime?
 
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  document        Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document        Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
   sessionChapters SessionChapter[]
   questions       Question[]
   messages        Message[]
@@ -79,8 +86,8 @@ model SessionChapter {
   sessionId String
   chapterId String
 
-  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  session   SimulationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  chapter   Chapter           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, chapterId])
   @@map("session_chapters")
@@ -93,8 +100,8 @@ model Question {
   content    String
   orderIndex Int
 
-  session      Session       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  chapter      Chapter       @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  session      SimulationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  chapter      Chapter           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   messages     Message[]
   answerScores AnswerScore[]
 
@@ -110,8 +117,8 @@ model Message {
   content    String
   createdAt  DateTime    @default(now())
 
-  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session  SimulationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
@@ -125,10 +132,11 @@ model AnswerScore {
   argumentScore    Int
   isSatisfied      Boolean
   rebuttal         String?
+  feedback         String?
   createdAt        DateTime @default(now())
 
-  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session  SimulationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@map("answer_scores")
 }
@@ -145,6 +153,52 @@ model DocumentChunk {
   chapter  Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@map("document_chunks")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
 
 enum DocumentStatus {

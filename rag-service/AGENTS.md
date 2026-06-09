@@ -15,12 +15,12 @@ Untuk context global project (arsitektur, database schema, alur komunikasi antar
 | Layer         | Teknologi                                             |
 | ------------- | ----------------------------------------------------- |
 | Framework     | FastAPI                                               |
-| LLM           | Anthropic `claude-haiku-4-5`                          |
-| Embedding     | OpenAI `text-embedding-3-small` (dimensi 1536)        |
+| LLM           | Groq `llama-3.1-8b-instant` (via Groq SDK)            |
+| Embedding     | `sentence-transformers` `all-MiniLM-L6-v2` (lokal)   |
 | Vector Search | pgvector (query langsung, tanpa LangChain/LlamaIndex) |
 | Database      | Supabase (PostgreSQL + pgvector)                      |
 
-Dua SDK dipakai sekaligus: OpenAI SDK khusus untuk embedding, Anthropic SDK khusus untuk LLM.
+Embedding berjalan secara lokal tanpa API eksternal menggunakan `sentence-transformers`. LLM dipanggil melalui Groq SDK yang mengarah ke model Llama 3.1.
 
 ---
 
@@ -118,22 +118,19 @@ Semua endpoint hanya bisa dipanggil dari backend Hono.
 
 ## Embedding
 
-Model: `text-embedding-3-small` dari OpenAI, dimensi **1536**.
+Model: `all-MiniLM-L6-v2` dari `sentence-transformers`, berjalan **secara lokal** tanpa API eksternal.
 
-Field `embedding` di tabel `document_chunks` didefinisikan sebagai `vector(1536)`.
+Dimensi output: **384**. Field `embedding` di tabel `document_chunks` harus didefinisikan sebagai `vector(384)`.
 
 ```python
 # core/embeddings.py
-from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
-client = OpenAI()
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def generate_embedding(text: str) -> list[float]:
-    response = client.embeddings.create(
-        input=text,
-        model="text-embedding-3-small"
-    )
-    return response.data[0].embedding
+    embedding = model.encode(text)
+    return embedding.tolist()
 ```
 
 ---
@@ -157,22 +154,28 @@ LIMIT :top_k;
 
 ## LLM
 
-Model: `claude-haiku-4-5` dari Anthropic.
+Model: `llama-3.1-8b-instant` diakses via **Groq SDK** (bukan Anthropic SDK).
 
 ```python
 # core/llm.py
-import anthropic
+from groq import Groq
+import os
+from dotenv import load_dotenv
 
-client = anthropic.Anthropic()
+load_dotenv()
 
-def call_llm(system: str, user: str) -> str:
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": user}],
-        system=system,
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def call_llm(system: str, user: str, max_tokens: int = 1024) -> str:
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        max_tokens=max_tokens,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
     )
-    return message.content[0].text
+    return response.choices[0].message.content
 ```
 
 Untuk endpoint yang butuh structured JSON output (evaluate, generate-questions), prompt LLM untuk return JSON saja tanpa preamble, lalu parse dengan `json.loads()`.
@@ -198,7 +201,8 @@ Gunakan FastAPI exception handler di `main.py`. Semua error return format konsis
 ## Environment Variables
 
 ```
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
+GROQ_API_KEY=
 DATABASE_URL=
 ```
+
+Embedding tidak membutuhkan API key karena model `all-MiniLM-L6-v2` berjalan secara lokal.
