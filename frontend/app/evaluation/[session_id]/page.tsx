@@ -59,39 +59,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const getChapterImprovisedFeedback = (label: string, verdict: string) => {
-  const cleanLabel = label.toUpperCase().trim();
-  if (verdict === "BELUM DIUJI") {
-    return "Bab ini belum sempat diuji karena simulasi diakhiri lebih awal sebelum pertanyaan bab ini muncul.";
-  }
-  const isPass = verdict === "LULUS";
 
-  if (isPass) {
-    if (cleanLabel.includes("BAB I") || cleanLabel.includes("BAB 1"))
-      return "Rumusan masalah and tujuan penelitian dirumuskan secara padat dan logis. Latar belakang memiliki alur deduktif yang kuat.";
-    if (cleanLabel.includes("BAB II") || cleanLabel.includes("BAB 2"))
-      return "Sintesis teori dan penyusunan kerangka pemikiran runtut serta relevan dengan variabel yang diteliti.";
-    if (cleanLabel.includes("BAB III") || cleanLabel.includes("BAB 3"))
-      return "Metodologi, instrumen penelitian, dan teknik analisis data didefinisikan secara valid serta dapat dipertanggungjawabkan.";
-    if (cleanLabel.includes("BAB IV") || cleanLabel.includes("BAB 4"))
-      return "Penyajian data tabel analisis sudah memadai, namun korelasi negatif yang tidak signifikan perlu didukung literatur tandingan.";
-    if (cleanLabel.includes("BAB V") || cleanLabel.includes("BAB 5"))
-      return "Penarikan kesimpulan telah menjawab rumusan masalah secara objektif dengan saran penelitian praktis yang realistis.";
-    return "Pertahanan argumentasi akademik Anda untuk bab ini dinilai sudah matang dan siap untuk dipresentasikan.";
-  } else {
-    if (cleanLabel.includes("BAB I") || cleanLabel.includes("BAB 1"))
-      return "Latar belakang masalah kurang tajam dalam memaparkan urgensi penelitian. Perumusan masalah perlu diperjelas fokusnya.";
-    if (cleanLabel.includes("BAB II") || cleanLabel.includes("BAB 2"))
-      return "Kaitan konsep antar variabel perlu diperkuat kembali untuk menyusun hipotesis dan landasan pustaka yang kokoh.";
-    if (cleanLabel.includes("BAB III") || cleanLabel.includes("BAB 3"))
-      return "Justifikasi teknik sampling kualitatif dan parameter durasi informan perlu diperjelas secara akademis agar tidak dituduh bias subjektif.";
-    if (cleanLabel.includes("BAB IV") || cleanLabel.includes("BAB 4"))
-      return "Penafsiran hasil pengujian data kurang komprehensif. Pembahasan temuan belum dikaitkan secara mendalam dengan teori pendukung.";
-    if (cleanLabel.includes("BAB V") || cleanLabel.includes("BAB 5"))
-      return "Kesimpulan belum menjawab seluruh rumusan masalah. Saran yang diajukan terlalu normatif dan kurang operasional.";
-    return "Catatan kritis Dosen Penguji AI menunjukkan perlunya penguatan pemaparan argumen akademis pada bagian ini.";
-  }
-};
 
 export default function EvaluationPage() {
   const params = useParams();
@@ -289,7 +257,7 @@ export default function EvaluationPage() {
     return "Perlu Latihan";
   };
 
-  const resilienceScore = Math.max(30, Math.min(100, Math.round(100 - (avgRebuttals * 25))));
+  const resilienceScore = Math.max(30, Math.min(100, Math.round((overallScore * 0.7) + (100 - (avgRebuttals * 25)) * 0.3)));
   const getResilienceLabel = (score: number) => {
     if (score >= 85) return "Sangat Tangguh";
     if (score >= 70) return "Tangguh";
@@ -500,56 +468,7 @@ export default function EvaluationPage() {
               </div>
             </div>
 
-            {/* 2. Chapter Breakdown Status */}
-            <div className="bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 shadow-sm space-y-4 animate-card-3 print:border-gray-200">
-              <p className="text-[9px] font-heading font-extrabold tracking-widest text-gray-400 uppercase">
-                CHAPTER EVALUATION BREAKDOWN
-              </p>
 
-              <div className="space-y-3">
-                {evaluationData.chapterBreakdown &&
-                evaluationData.chapterBreakdown.length > 0 ? (
-                  evaluationData.chapterBreakdown.map((ch) => {
-                    const isPass = ch.verdict === "LULUS";
-                    const isNotTested = ch.verdict === "BELUM DIUJI";
-                    const summary = getChapterImprovisedFeedback(
-                      ch.label,
-                      ch.verdict,
-                    );
-                    return (
-                      <div
-                        key={ch.chapterId}
-                        className="flex items-start gap-3.5 p-3.5 rounded-xl border border-gray-100 bg-[#F8F9FF]/20"
-                      >
-                        <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-1 flex-shrink-0 w-full md:w-28">
-                          <span className="text-xs font-extrabold text-[#0B1C30]">
-                            {ch.label}
-                          </span>
-                          <span
-                            className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border ${
-                              isNotTested
-                                ? "bg-gray-50 text-gray-500 border-gray-200"
-                                : isPass
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
-                                  : "bg-amber-50 text-amber-700 border-amber-200/50"
-                            }`}
-                          >
-                            {ch.verdict}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-500 leading-relaxed flex-1">
-                          {summary}
-                        </p>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-xs text-gray-400 text-center py-4">
-                    Tidak ada data bab yang dinilai.
-                  </p>
-                )}
-              </div>
-            </div>
 
             {/* 3. Defense Readiness Gauges */}
             <div className="bg-white rounded-2xl border border-[#C7C4D8]/50 p-6 shadow-sm space-y-4 animate-card-3">
