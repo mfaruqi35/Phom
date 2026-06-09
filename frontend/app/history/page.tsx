@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 
 const getUserInitials = (name?: string) => {
   if (!name) return "US";
@@ -30,6 +31,8 @@ const calculateSessionScore = (answerScores: any[]) => {
   return Math.round(finalScore);
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 export default function HistoryPage() {
   const router = useRouter();
   const { data: authSession, isPending } = authClient.useSession();
@@ -44,6 +47,9 @@ export default function HistoryPage() {
 
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<{ id: string; title: string } | null>(null);
 
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -63,13 +69,39 @@ export default function HistoryPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    const sessionId = sessionToDelete.id;
+
+    setIsDeleting(sessionId);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const resJson = await response.json();
+      if (resJson.success) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setDeleteModalOpen(false);
+        setSessionToDelete(null);
+      } else {
+        alert(resJson.error?.message || "Gagal menghapus riwayat.");
+      }
+    } catch (err) {
+      console.error("Failed to delete session:", err);
+      alert("Terjadi kesalahan koneksi saat menghapus riwayat.");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   // Fetch session history on load
   useEffect(() => {
     if (!authSession) return;
     const fetchHistory = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/sessions/user",
+          `${API_BASE_URL}/api/sessions/user`,
           {
             credentials: "include",
           },
@@ -278,8 +310,31 @@ export default function HistoryPage() {
               return (
                 <div
                   key={sessionItem.id}
-                  className={`bg-white border border-[#C7C4D8]/50 rounded-2xl p-5 md:p-6 shadow-sm hover:border-[#3525cd]/40 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${cardAnimClass}`}
+                  className={`relative bg-white border border-[#C7C4D8]/50 rounded-2xl p-5 md:p-6 shadow-sm hover:border-[#3525cd]/40 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${cardAnimClass}`}
                 >
+                  {/* Delete button (trash can) */}
+                  <button
+                    onClick={() => {
+                      setSessionToDelete({
+                        id: sessionItem.id,
+                        title: sessionItem.document?.title || "Dokumen Tanpa Judul",
+                      });
+                      setDeleteModalOpen(true);
+                    }}
+                    disabled={isDeleting !== null}
+                    className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-xl hover:bg-red-50/80 active:scale-95 disabled:opacity-[0.35] z-10"
+                    title="Hapus riwayat"
+                  >
+                    {isDeleting === sessionItem.id ? (
+                      <span className="material-symbols-outlined text-sm font-bold animate-spin">
+                        autorenew
+                      </span>
+                    ) : (
+                      <span className="material-symbols-outlined text-sm font-bold">
+                        delete
+                      </span>
+                    )}
+                  </button>
                   {/* Left Metadata info */}
                   <div className="space-y-3.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -415,8 +470,29 @@ export default function HistoryPage() {
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out forwards;
         }
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
       `,
         }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (isDeleting === null) {
+            setDeleteModalOpen(false);
+            setSessionToDelete(null);
+          }
+        }}
+        onConfirm={handleDeleteSession}
+        isDeleting={isDeleting !== null}
+        documentTitle={sessionToDelete?.title}
       />
     </div>
   );

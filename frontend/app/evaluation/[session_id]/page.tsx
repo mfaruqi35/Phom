@@ -106,6 +106,39 @@ export default function EvaluationPage() {
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [isStartingNewSession, setIsStartingNewSession] = useState(false);
+
+  const handleRepeatSimulation = async () => {
+    if (!evaluationData) return;
+
+    setIsStartingNewSession(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          documentId: evaluationData.session.documentId,
+          mode: evaluationData.session.mode,
+          chapterIds: evaluationData.chapterBreakdown.map((ch) => ch.chapterId),
+        }),
+        credentials: "include",
+      });
+      const resJson = await response.json();
+
+      if (resJson.success) {
+        router.push(`/workspace/${resJson.data.id}`);
+      } else {
+        alert(resJson.error?.message || "Gagal mengulangi simulasi sidang.");
+        setIsStartingNewSession(false);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan koneksi saat mengulangi simulasi.");
+      console.error(err);
+      setIsStartingNewSession(false);
+    }
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -718,10 +751,20 @@ export default function EvaluationPage() {
             Kembali ke Dashboard
           </a>
           <button
-            onClick={() => router.push(`/workspace/${sessionId}`)}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#3525cd] text-white text-center font-heading font-extrabold text-xs hover:bg-[#281baf] transition-all shadow-md shadow-indigo-600/10 active:scale-[0.98]"
+            onClick={handleRepeatSimulation}
+            disabled={isStartingNewSession}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#3525cd] text-white text-center font-heading font-extrabold text-xs hover:bg-[#281baf] transition-all shadow-md shadow-indigo-600/10 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Ulangi Simulasi Sidang
+            {isStartingNewSession ? (
+              <>
+                <span className="animate-spin material-symbols-outlined text-sm font-bold">
+                  autorenew
+                </span>
+                Memulai...
+              </>
+            ) : (
+              "Ulangi Simulasi Sidang"
+            )}
           </button>
         </div>
       </main>
