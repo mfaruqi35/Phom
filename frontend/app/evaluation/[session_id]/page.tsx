@@ -95,8 +95,15 @@ export default function EvaluationPage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+
+  // Client-side route guard: redirect to "/" if not logged in
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/");
+    }
+  }, [session, isPending, router]);
 
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);

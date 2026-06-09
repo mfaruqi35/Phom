@@ -70,8 +70,15 @@ export default function WorkspacePage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+
+  // Client-side route guard: redirect to "/" if not logged in
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/");
+    }
+  }, [session, isPending, router]);
 
   const [docTitle, setDocTitle] = useState<string>("Full_Thesis_Final_Draft.pdf");
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
