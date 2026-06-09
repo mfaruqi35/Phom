@@ -16,9 +16,10 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    "http://localhost:3000", // frontend Next.js
-    "http://localhost:3001", // backend itself / Postman
-  ],
+    "http://localhost:3000",
+    "http://localhost:3001",
+    process.env.FRONTEND_URL,
+  ].filter(Boolean) as string[],
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL!,
 });
