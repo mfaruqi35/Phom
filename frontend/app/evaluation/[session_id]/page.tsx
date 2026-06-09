@@ -22,8 +22,8 @@ interface ChapterBreakdown {
   chapterId: string;
   label: string;
   title: string;
-  score: number;
-  verdict: "LULUS" | "REVISI";
+  score: number | null;
+  verdict: "LULUS" | "REVISI" | "BELUM DIUJI";
 }
 
 interface EvaluationData {
@@ -61,6 +61,9 @@ const getUserInitials = (name?: string) => {
 
 const getChapterImprovisedFeedback = (label: string, verdict: string) => {
   const cleanLabel = label.toUpperCase().trim();
+  if (verdict === "BELUM DIUJI") {
+    return "Bab ini belum sempat diuji karena simulasi diakhiri lebih awal sebelum pertanyaan bab ini muncul.";
+  }
   const isPass = verdict === "LULUS";
 
   if (isPass) {
@@ -95,7 +98,7 @@ export default function EvaluationPage() {
   const router = useRouter();
   const sessionId = params.session_id as string;
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const user = session?.user;
 
   // Profile Dropdown state
@@ -105,7 +108,42 @@ export default function EvaluationPage() {
   const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(
     null,
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    return sessionId !== "mock-session" && !!sessionId;
+  });
+  const [isStartingNewSession, setIsStartingNewSession] = useState(false);
+
+  const handleRepeatSimulation = async () => {
+    if (!evaluationData) return;
+
+    setIsStartingNewSession(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          documentId: evaluationData.session.documentId,
+          mode: evaluationData.session.mode,
+          chapterIds: evaluationData.chapterBreakdown.map((ch) => ch.chapterId),
+        }),
+        credentials: "include",
+      });
+      const resJson = await response.json();
+
+      if (resJson.success) {
+        router.push(`/workspace/${resJson.data.id}`);
+      } else {
+        alert(resJson.error?.message || "Gagal mengulangi simulasi sidang.");
+        setIsStartingNewSession(false);
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan koneksi saat mengulangi simulasi.");
+      console.error(err);
+      setIsStartingNewSession(false);
+    }
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -121,10 +159,18 @@ export default function EvaluationPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Set document title
+  useEffect(() => {
+    if (evaluationData?.session?.document?.title) {
+      document.title = `${evaluationData.session.document.title} - Laporan Evaluasi | Phom`;
+    } else {
+      document.title = "Laporan Evaluasi - Phom";
+    }
+  }, [evaluationData]);
+
   // Fetch evaluation data
   useEffect(() => {
     if (!sessionId || sessionId === "mock-session") {
-      setIsLoading(false);
       return;
     }
 
@@ -307,10 +353,10 @@ export default function EvaluationPage() {
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                {getUserInitials(user?.name)}
+                {getUserInitials(user?.name || "Mahasiswa Phom")}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                {user?.name || "Dr. Aris Setiawan"}
+                {user?.name || "Mahasiswa Phom"}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -325,7 +371,7 @@ export default function EvaluationPage() {
                     {session ? "Akun Pengguna" : "Akun Demo"}
                   </p>
                   <p className="text-xs font-bold text-gray-800 truncate">
-                    {user?.email || "aris.setiawan@univ.ac.id"}
+                    {user?.email || "mahasiswa@phom.id"}
                   </p>
                 </div>
                 <a
@@ -363,8 +409,10 @@ export default function EvaluationPage() {
             Laporan Evaluasi Simulasi
           </h1>
           <p className="text-sm text-gray-500">
-            Hasil penilaian komprehensif atas pertahanan metodologi, penguasaan
-            teori, dan retorika jawaban Anda.
+            Hasil penilaian komprehensif untuk naskah:{" "}
+            <span className="font-bold text-[#3525cd] block sm:inline mt-1 sm:mt-0">
+              {evaluationData.session?.document?.title || "Dokumen Skripsi"}
+            </span>
           </p>
         </div>
 
@@ -422,8 +470,7 @@ export default function EvaluationPage() {
 
                 <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
                   Komite penguji AI menilai tingkat argumentasi dan penguasaan
-                  naskah Anda berada di kategori kelayakan **{eligibilityGrade}
-                  **.
+                  naskah Anda berada di kategori kelayakan <strong className="font-bold text-[#0B1C30]">{eligibilityGrade}</strong>.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 mt-1">
@@ -458,6 +505,7 @@ export default function EvaluationPage() {
                 evaluationData.chapterBreakdown.length > 0 ? (
                   evaluationData.chapterBreakdown.map((ch) => {
                     const isPass = ch.verdict === "LULUS";
+                    const isNotTested = ch.verdict === "BELUM DIUJI";
                     const summary = getChapterImprovisedFeedback(
                       ch.label,
                       ch.verdict,
@@ -473,7 +521,9 @@ export default function EvaluationPage() {
                           </span>
                           <span
                             className={`text-[8px] font-extrabold px-2 py-0.5 rounded-full border ${
-                              isPass
+                              isNotTested
+                                ? "bg-gray-50 text-gray-500 border-gray-200"
+                                : isPass
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
                                 : "bg-amber-50 text-amber-700 border-amber-200/50"
                             }`}
@@ -658,7 +708,7 @@ export default function EvaluationPage() {
 
                       {/* Pertanyaan */}
                       <div className="text-xs text-[#0B1C30] leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 font-semibold">
-                        <strong>Tanya:</strong> "{rec.question}"
+                        <strong>Tanya:</strong> &ldquo;{rec.question}&rdquo;
                       </div>
 
                       {/* Jawaban User */}
@@ -667,7 +717,7 @@ export default function EvaluationPage() {
                           JAWABAN DEFENSIF ANDA
                         </span>
                         <p className="italic leading-relaxed text-gray-600">
-                          "{rec.userAnswer || "Tidak ada jawaban."}"
+                          &ldquo;{rec.userAnswer || "Tidak ada jawaban."}&rdquo;
                         </p>
                       </div>
 
@@ -707,10 +757,20 @@ export default function EvaluationPage() {
             Kembali ke Dashboard
           </a>
           <button
-            onClick={() => router.push(`/workspace/${sessionId}`)}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#3525cd] text-white text-center font-heading font-extrabold text-xs hover:bg-[#281baf] transition-all shadow-md shadow-indigo-600/10 active:scale-[0.98]"
+            onClick={handleRepeatSimulation}
+            disabled={isStartingNewSession}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#3525cd] text-white text-center font-heading font-extrabold text-xs hover:bg-[#281baf] transition-all shadow-md shadow-indigo-600/10 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Ulangi Simulasi Sidang
+            {isStartingNewSession ? (
+              <>
+                <span className="animate-spin material-symbols-outlined text-sm font-bold">
+                  autorenew
+                </span>
+                Memulai...
+              </>
+            ) : (
+              "Ulangi Simulasi Sidang"
+            )}
           </button>
         </div>
       </main>
