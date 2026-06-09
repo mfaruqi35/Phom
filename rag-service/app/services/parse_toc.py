@@ -3,6 +3,7 @@ import io
 import json
 from PyPDF2 import PdfReader
 from app.core.llm import call_llm
+from app.services.validate import validate_document
 
 def parse_toc(file_url: str) -> list:
     with httpx.Client() as client:
@@ -17,6 +18,11 @@ def parse_toc(file_url: str) -> list:
     sample_text = ""
     for i in range(min(10, total_pages)):
         sample_text += reader.pages[i].extract_text() or ""
+
+    # Validasi konten apakah akademis (skripsi/tesis)
+    if not validate_document(sample_text):
+        print(f"Validation failed: Document from {file_url} is not academic.")
+        return []
 
     system = """Kamu adalah parser dokumen akademik. Tugasmu adalah mengekstrak struktur bab dari dokumen skripsi.
 

@@ -14,6 +14,21 @@ export const generateQuestionsService = async ({
   chapterIds,
   mode,
 }: GenerateQuestionsInput) => {
+  if (!chapterIds || chapterIds.length === 0) {
+    throw new Error("No chapters selected for question generation.");
+  }
+
+  // Double check if questions are already generated for this session to prevent race conditions
+  const existingQuestions = await prisma.question.findMany({
+    where: { sessionId },
+    orderBy: { orderIndex: "asc" },
+  });
+
+  if (existingQuestions.length > 0) {
+    console.log(`Questions already exist for session ${sessionId}, returning existing ones.`);
+    return existingQuestions;
+  }
+
   const result = await ragApi.generateQuestions({
     session_id: sessionId,
     document_id: documentId,

@@ -65,6 +65,8 @@ async function triggerProcessing(documentId: string, fileUrl: string) {
           orderIndex: chapter.order_index,
         })),
       });
+    } else {
+      throw new Error("Struktur naskah tidak valid: Tidak ditemukan bab akademik (Daftar Isi tidak sesuai).");
     }
 
     const chapters = await prisma.chapter.findMany({
