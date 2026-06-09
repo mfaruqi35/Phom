@@ -40,8 +40,16 @@ export const generateQuestionsService = async ({
     throw new Error("RAG service returned no questions.");
   }
 
+  // Enforce mode limit in backend to align with progress bar descriptions
+  let targetCount = result.questions.length;
+  if (mode === "QUICK") targetCount = 4;
+  else if (mode === "STANDARD") targetCount = 9;
+  else if (mode === "DEEP") targetCount = 13;
+
+  const finalQuestions = result.questions.slice(0, targetCount);
+
   const questions = await prisma.question.createManyAndReturn({
-    data: result.questions.map((content, index) => ({
+    data: finalQuestions.map((content, index) => ({
       sessionId,
       chapterId: chapterIds[0],
       content,

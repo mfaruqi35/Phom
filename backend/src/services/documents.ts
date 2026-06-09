@@ -66,7 +66,9 @@ async function triggerProcessing(documentId: string, fileUrl: string) {
         })),
       });
     } else {
-      throw new Error("Struktur naskah tidak valid: Tidak ditemukan bab akademik (Daftar Isi tidak sesuai).");
+      throw new Error(
+        "Struktur naskah tidak valid: Tidak ditemukan bab akademik (Daftar Isi tidak sesuai).",
+      );
     }
 
     const chapters = await prisma.chapter.findMany({
@@ -92,6 +94,21 @@ async function triggerProcessing(documentId: string, fileUrl: string) {
     await prisma.document.update({
       where: { id: documentId },
       data: { status: "FAILED" },
+    });
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      select: { fileUrl: true, userId: true },
+    });
+    if (document) {
+      const fileName = document.fileUrl.split("/documents/")[1];
+      if (fileName) {
+        await supabase.storage
+          .from("documents")
+          .remove([decodeURIComponent(fileName)]);
+      }
+    }
+    await prisma.document.delete({
+      where: { id: documentId },
     });
     throw err;
   }

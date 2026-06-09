@@ -73,7 +73,8 @@ Respond ONLY with a JSON object in this exact format, nothing else:
         elif "```" in clean:
             clean = clean.split("```")[1].split("```")[0].strip()
         result = json.loads(clean)
-        return result.get("questions", [])
+        questions_list = result.get("questions", [])
+        return questions_list[:target_count]
     except json.JSONDecodeError:
         lines = [l.strip() for l in response.split("\n") if l.strip() and l.strip()[0].isdigit()]
         return lines[:target_count]

@@ -2,26 +2,32 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient, getApiBaseUrl } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
+import DeleteConfirmationModal from "@/components/delete-confirmation-modal";
 
-const API_BASE_URL = getApiBaseUrl();
-
-interface AnswerScoreItem {
+interface AnswerScore {
   methodologyScore: number;
   theoryScore: number;
   argumentScore: number;
 }
 
+interface DocumentInfo {
+  title: string;
+}
+
+interface SessionChapterInfo {
+  id: string;
+  chapterId: string;
+}
+
 interface SessionItem {
   id: string;
+  isCompleted: boolean;
   mode: string;
   createdAt: string;
-  isCompleted: boolean;
-  sessionChapters?: { chapterId: string }[];
-  document?: {
-    title: string;
-  };
-  answerScores: AnswerScoreItem[];
+  answerScores: AnswerScore[];
+  document?: DocumentInfo;
+  sessionChapters?: SessionChapterInfo[];
 }
 
 const getUserInitials = (name?: string) => {
@@ -31,7 +37,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: AnswerScoreItem[]) => {
+const calculateSessionScore = (answerScores: AnswerScore[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -50,6 +56,8 @@ const calculateSessionScore = (answerScores: AnswerScoreItem[]) => {
   return Math.round(finalScore);
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 export default function HistoryPage() {
   const router = useRouter();
   const { data: authSession, isPending } = authClient.useSession();
@@ -64,6 +72,9 @@ export default function HistoryPage() {
 
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<{ id: string; title: string } | null>(null);
 
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -82,6 +93,32 @@ export default function HistoryPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    const sessionId = sessionToDelete.id;
+
+    setIsDeleting(sessionId);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const resJson = await response.json();
+      if (resJson.success) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setDeleteModalOpen(false);
+        setSessionToDelete(null);
+      } else {
+        alert(resJson.error?.message || "Gagal menghapus riwayat.");
+      }
+    } catch (err) {
+      console.error("Failed to delete session:", err);
+      alert("Terjadi kesalahan koneksi saat menghapus riwayat.");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   // Fetch session history on load
   useEffect(() => {
@@ -186,10 +223,10 @@ export default function HistoryPage() {
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                {getUserInitials(user?.name)}
+                {getUserInitials(user?.name || "Mahasiswa Phom")}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                {user?.name || "Dr. Aris Setiawan"}
+                {user?.name || "Mahasiswa Phom"}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -204,7 +241,7 @@ export default function HistoryPage() {
                     {authSession ? "Akun Pengguna" : "Akun Demo"}
                   </p>
                   <p className="text-xs font-bold text-gray-800 truncate">
-                    {user?.email || "aris.setiawan@univ.ac.id"}
+                    {user?.email || "mahasiswa@phom.id"}
                   </p>
                 </div>
                 <a
@@ -298,8 +335,31 @@ export default function HistoryPage() {
               return (
                 <div
                   key={sessionItem.id}
-                  className={`bg-white border border-[#C7C4D8]/50 rounded-2xl p-5 md:p-6 shadow-sm hover:border-[#3525cd]/40 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${cardAnimClass}`}
+                  className={`relative bg-white border border-[#C7C4D8]/50 rounded-2xl p-5 md:p-6 shadow-sm hover:border-[#3525cd]/40 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${cardAnimClass}`}
                 >
+                  {/* Delete button (trash can) */}
+                  <button
+                    onClick={() => {
+                      setSessionToDelete({
+                        id: sessionItem.id,
+                        title: sessionItem.document?.title || "Dokumen Tanpa Judul",
+                      });
+                      setDeleteModalOpen(true);
+                    }}
+                    disabled={isDeleting !== null}
+                    className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-xl hover:bg-red-50/80 active:scale-95 disabled:opacity-[0.35] z-10"
+                    title="Hapus riwayat"
+                  >
+                    {isDeleting === sessionItem.id ? (
+                      <span className="material-symbols-outlined text-sm font-bold animate-spin">
+                        autorenew
+                      </span>
+                    ) : (
+                      <span className="material-symbols-outlined text-sm font-bold">
+                        delete
+                      </span>
+                    )}
+                  </button>
                   {/* Left Metadata info */}
                   <div className="space-y-3.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -435,8 +495,29 @@ export default function HistoryPage() {
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out forwards;
         }
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
       `,
         }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (isDeleting === null) {
+            setDeleteModalOpen(false);
+            setSessionToDelete(null);
+          }
+        }}
+        onConfirm={handleDeleteSession}
+        isDeleting={isDeleting !== null}
+        documentTitle={sessionToDelete?.title}
       />
     </div>
   );

@@ -13,6 +13,47 @@ interface Message {
   timestamp: Date;
 }
 
+interface ChapterInfo {
+  id: string;
+  label: string;
+  title: string;
+}
+
+interface SessionChapter {
+  id: string;
+  chapterId: string;
+  chapter: ChapterInfo;
+}
+
+interface SessionData {
+  id: string;
+  userId: string;
+  documentId: string;
+  title?: string;
+  mode: string;
+  totalQuestions: number;
+  currentStep: number;
+  isCompleted: boolean;
+  createdAt: string;
+  sessionChapters?: SessionChapter[];
+}
+
+interface Question {
+  id: string;
+  content: string;
+  orderIndex: number;
+  chapterId: string;
+}
+
+interface ApiMessage {
+  id: string;
+  role: "USER" | "AI";
+  content: string;
+  subTurn: number;
+  questionId: string;
+  createdAt: string;
+}
+
 const getUserInitials = (name?: string) => {
   if (!name) return "US";
   const parts = name.trim().split(/\s+/);
@@ -93,6 +134,7 @@ export default function WorkspacePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -109,10 +151,16 @@ export default function WorkspacePage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auto scroll to bottom of chat
+  // Scroll chat container to bottom when messages or typing state changes
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [messages, isTyping]);
+
 
   // Set document title
   useEffect(() => {
@@ -242,18 +290,22 @@ export default function WorkspacePage() {
                 timestamp: new Date(),
               }]);
             }
-          } catch (genErr: unknown) {
+          } catch (genErr) {
             activeGenerations.delete(sessionId);
-            const errMsg = genErr instanceof Error ? genErr.message : String(genErr);
-            console.warn("Failed to generate questions:", errMsg);
-            setMessages([{
-              id: `err-init-${Date.now()}`,
-              role: "AI",
-              content: `⚠️ Gagal mempersiapkan pertanyaan. ${errMsg || "Koneksi terputus atau terjadi kesalahan server. Silakan muat ulang halaman ini."}`,
-              subTurn: 0,
-              questionId: "",
-              timestamp: new Date(),
-            }]);
+            console.warn("Failed to generate first question:", genErr);
+            const errMsg = genErr instanceof Error ? genErr.message : "Koneksi terputus atau terjadi kesalahan server. Silakan muat ulang halaman ini.";
+            if (messages.length === 0) {
+              setMessages([
+                {
+                  id: "error-gen",
+                  role: "AI",
+                  content: `⚠️ Gagal mempersiapkan pertanyaan. ${errMsg}`,
+                  subTurn: 0,
+                  questionId: "",
+                  timestamp: new Date(),
+                }
+              ]);
+            }
           } finally {
             setIsTyping(false);
           }
@@ -266,7 +318,7 @@ export default function WorkspacePage() {
           if (messagesJson.success) {
             const fetchedMsgs = messagesJson.data;
             if (fetchedMsgs.length > 0) {
-              setMessages(fetchedMsgs.map((m: DbMessage) => ({
+              setMessages(fetchedMsgs.map((m: ApiMessage) => ({
                 id: m.id,
                 role: m.role,
                 content: m.content,
@@ -357,7 +409,7 @@ export default function WorkspacePage() {
           });
           const refreshJson = await refreshRes.json();
           if (refreshJson.success) {
-            setMessages(refreshJson.data.map((m: DbMessage) => ({
+            setMessages(refreshJson.data.map((m: ApiMessage) => ({
               id: m.id,
               role: m.role,
               content: m.content,
@@ -367,7 +419,7 @@ export default function WorkspacePage() {
             })));
 
             // Re-sync currentStep dynamically based on unique questionIds in messages
-            const uniqueQuestions = new Set(refreshJson.data.map((m: DbMessage) => m.questionId));
+            const uniqueQuestions = new Set<string>(refreshJson.data.map((m: ApiMessage) => m.questionId));
             const activeQCount = uniqueQuestions.size;
             if (activeQCount > 0) {
               setCurrentStep(activeQCount);
@@ -451,7 +503,7 @@ export default function WorkspacePage() {
         });
         const messagesJson = await messagesRes.json();
         if (messagesJson.success) {
-          setMessages(messagesJson.data.map((m: DbMessage) => ({
+          setMessages(messagesJson.data.map((m: ApiMessage) => ({
             id: m.id,
             role: m.role,
             content: m.content,
@@ -461,7 +513,7 @@ export default function WorkspacePage() {
           })));
 
           // Sync currentStep based on unique questionIds in messages
-          const uniqueQuestions = new Set(messagesJson.data.map((m: DbMessage) => m.questionId));
+          const uniqueQuestions = new Set<string>(messagesJson.data.map((m: ApiMessage) => m.questionId));
           const activeQCount = uniqueQuestions.size;
           if (activeQCount > 0) {
             setCurrentStep(activeQCount);
@@ -499,7 +551,7 @@ export default function WorkspacePage() {
               });
               const refreshJson = await refreshRes.json();
               if (refreshJson.success) {
-                setMessages(refreshJson.data.map((m: DbMessage) => ({
+                setMessages(refreshJson.data.map((m: ApiMessage) => ({
                   id: m.id,
                   role: m.role,
                   content: m.content,
@@ -509,7 +561,7 @@ export default function WorkspacePage() {
                 })));
 
                 // Sync currentStep based on unique questionIds in messages
-                const uniqueQuestions = new Set(refreshJson.data.map((m: DbMessage) => m.questionId));
+                const uniqueQuestions = new Set<string>(refreshJson.data.map((m: ApiMessage) => m.questionId));
                 const activeQCount = uniqueQuestions.size;
                 if (activeQCount > 0) {
                   setCurrentStep(activeQCount);
@@ -639,10 +691,10 @@ export default function WorkspacePage() {
               className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3.5 py-1.5 hover:bg-indigo-50/40 border border-[#C7C4D8]/50 bg-white transition-all shadow-sm active:scale-[0.98]"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-inner">
-                {getUserInitials(user?.name)}
+                {getUserInitials(user?.name || "Mahasiswa Phom")}
               </div>
               <span className="text-xs font-bold text-gray-700 hidden sm:inline-block">
-                {user?.name || "Dr. Aris Setiawan"}
+                {user?.name || "Mahasiswa Phom"}
               </span>
               <span className="material-symbols-outlined text-base text-gray-400">
                 keyboard_arrow_down
@@ -657,7 +709,7 @@ export default function WorkspacePage() {
                     {session ? "Akun Pengguna" : "Akun Demo"}
                   </p>
                   <p className="text-xs font-bold text-gray-800 truncate">
-                    {user?.email || "aris.setiawan@univ.ac.id"}
+                    {user?.email || "mahasiswa@phom.id"}
                   </p>
                 </div>
                 <a 
@@ -696,8 +748,20 @@ export default function WorkspacePage() {
                 SESSION MODE
               </span>
               <div className="p-3.5 bg-indigo-50/30 rounded-xl border border-indigo-100/40 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-[#3525cd]">
-                  <span className="material-symbols-outlined text-lg font-bold">school</span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  sessionData?.mode === "QUICK"
+                    ? "bg-amber-100 text-amber-600"
+                    : sessionData?.mode === "DEEP"
+                    ? "bg-purple-100 text-purple-600"
+                    : "bg-indigo-100 text-[#3525cd]"
+                }`}>
+                  <span className="material-symbols-outlined text-lg font-bold">
+                    {sessionData?.mode === "QUICK"
+                      ? "bolt"
+                      : sessionData?.mode === "DEEP"
+                      ? "science"
+                      : "school"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs font-bold text-gray-800 block leading-tight">
@@ -743,7 +807,7 @@ export default function WorkspacePage() {
                 TEST SCOPE
               </span>
               <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                {sessionData ? (
+                {sessionData && sessionData.sessionChapters ? (
                   sessionData.sessionChapters.map((sc: SessionChapter) => (
                     <div key={sc.id} className="text-xs text-gray-600 font-semibold flex items-center gap-2 bg-indigo-50/20 px-2.5 py-1.5 rounded-lg border border-indigo-50/50">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#3525cd] flex-shrink-0"></span>
@@ -796,7 +860,7 @@ export default function WorkspacePage() {
         <section className="flex-1 flex flex-col bg-white border border-[#C7C4D8]/50 rounded-2xl shadow-sm overflow-hidden min-h-0 md:h-full animate-card-2">
           
           {/* Chat Bubble List (Scrollable) */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-gray-50/30">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-gray-50/30">
             
             {/* Group messages by question */}
             {activeQuestions.map((q, idx) => {

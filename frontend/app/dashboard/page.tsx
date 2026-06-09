@@ -18,7 +18,33 @@ interface Chapter {
   pageEnd: string;
 }
 
-interface DbChapter {
+interface AnswerScore {
+  methodologyScore: number;
+  theoryScore: number;
+  argumentScore: number;
+}
+
+interface DocumentInfo {
+  title: string;
+}
+
+interface SessionChapterInfo {
+  id: string;
+  chapterId: string;
+}
+
+interface SessionItem {
+  id: string;
+  isCompleted: boolean;
+  mode: string;
+  createdAt: string;
+  answerScores: AnswerScore[];
+  document?: DocumentInfo;
+  sessionChapters?: SessionChapterInfo[];
+  totalQuestions?: number;
+}
+
+interface ApiChapter {
   id: string;
   label: string;
   title: string;
@@ -26,24 +52,32 @@ interface DbChapter {
   pageEnd: number;
 }
 
-interface AnswerScoreItem {
-  methodologyScore: number;
-  theoryScore: number;
-  argumentScore: number;
-}
-
-interface RecentSession {
-  id: string;
-  mode: string;
-  createdAt: string;
-  isCompleted: boolean;
-  totalQuestions?: number;
-  sessionChapters?: { chapterId: string }[];
-  document?: {
-    title: string;
-  };
-  answerScores: AnswerScoreItem[];
-}
+// ─── Mock data ────────────────────────────────────────────────────────────────
+const INITIAL_CHAPTERS: Chapter[] = [
+  { id: "1", label: "I", title: "Pendahuluan", pageStart: "1", pageEnd: "10" },
+  {
+    id: "2",
+    label: "II",
+    title: "Tinjauan Pustaka",
+    pageStart: "11",
+    pageEnd: "25",
+  },
+  {
+    id: "3",
+    label: "III",
+    title: "Metodologi",
+    pageStart: "26",
+    pageEnd: "45",
+  },
+  {
+    id: "4",
+    label: "IV",
+    title: "Hasil & Pembahasan",
+    pageStart: "",
+    pageEnd: "",
+  },
+  { id: "5", label: "V", title: "Penutupan", pageStart: "", pageEnd: "" },
+];
 
 const SIMULATION_MODES = [
   {
@@ -76,7 +110,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const calculateSessionScore = (answerScores: AnswerScoreItem[]) => {
+const calculateSessionScore = (answerScores: AnswerScore[]) => {
   if (!answerScores || answerScores.length === 0) return null;
   let totalMethodology = 0;
   let totalTheory = 0;
@@ -132,7 +166,7 @@ export default function DashboardPage() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
-  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
+  const [recentSessions, setRecentSessions] = useState<SessionItem[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
 
   // Close dropdown on click outside
@@ -184,6 +218,22 @@ export default function DashboardPage() {
             credentials: "include",
           },
         );
+
+        if (!response.ok) {
+          console.log("Status check failed, response not ok:", response.status);
+          const resJson = await response.json().catch(() => ({}));
+          clearInterval(interval);
+          setIsProcessing(false);
+          setUploadedFile(null);
+          setCurrentDocumentId(null);
+          const code = resJson.error?.code;
+          const msg = code === "DOCUMENT_NOT_FOUND"
+            ? "File PDF yang diunggah ditolak karena bukan dokumen skripsi yang valid atau struktur bab tidak terdeteksi."
+            : (resJson.error?.message || "Terjadi kesalahan pemrosesan dokumen. Silakan coba lagi.");
+          setErrorMessage(msg);
+          return;
+        }
+
         const resJson = await response.json();
 
         if (resJson.success) {
@@ -204,7 +254,7 @@ export default function DashboardPage() {
             );
             const chaptersJson = await chaptersRes.json();
             if (chaptersJson.success) {
-              const mapped = chaptersJson.data.map((ch: DbChapter) => ({
+              const mapped = chaptersJson.data.map((ch: ApiChapter) => ({
                 id: ch.id,
                 label: ch.label,
                 title: ch.title,
@@ -239,6 +289,16 @@ export default function DashboardPage() {
               setProcessingPhase("Membuat representasi vektor...");
             }
           }
+        } else {
+          clearInterval(interval);
+          setIsProcessing(false);
+          setUploadedFile(null);
+          setCurrentDocumentId(null);
+          const code = resJson.error?.code;
+          const msg = code === "DOCUMENT_NOT_FOUND"
+            ? "File PDF yang diunggah ditolak karena bukan dokumen skripsi yang valid atau struktur bab tidak terdeteksi."
+            : (resJson.error?.message || "Terjadi kesalahan pemrosesan dokumen. Silakan coba lagi.");
+          setErrorMessage(msg);
         }
       } catch (err) {
         console.error("Polling error:", err);
@@ -295,7 +355,7 @@ export default function DashboardPage() {
     if (chapterId.length < 5) return;
 
     try {
-      const payload: { title?: string; pageStart?: number; pageEnd?: number } = {};
+      const payload: Record<string, string | number> = {};
       if (fields.title !== undefined) payload.title = fields.title;
       if (fields.pageStart !== undefined)
         payload.pageStart = Number(fields.pageStart);
@@ -422,7 +482,7 @@ export default function DashboardPage() {
         );
         const getJson = await getRes.json();
         if (getJson.success) {
-          const fetched = getJson.data.map((ch: DbChapter) => ({
+          const fetched = getJson.data.map((ch: ApiChapter) => ({
             id: ch.id,
             label: ch.label,
             title: ch.title,
