@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
+
+const API_BASE_URL = getApiBaseUrl();
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type SimulationMode = "quick" | "standard" | "deep";
@@ -153,7 +155,7 @@ export default function DashboardPage() {
     const fetchRecentSessions = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/sessions/user",
+          `${API_BASE_URL}/api/sessions/user`,
           {
             credentials: "include",
           },
@@ -177,7 +179,7 @@ export default function DashboardPage() {
     const interval = setInterval(async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/documents/${documentId}/status`,
+          `${API_BASE_URL}/api/documents/${documentId}/status`,
           {
             credentials: "include",
           },
@@ -195,7 +197,7 @@ export default function DashboardPage() {
 
             // Fetch chapters
             const chaptersRes = await fetch(
-              `http://localhost:3001/api/chapters/${documentId}`,
+              `${API_BASE_URL}/api/chapters/${documentId}`,
               {
                 credentials: "include",
               },
@@ -255,7 +257,7 @@ export default function DashboardPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3001/api/documents", {
+      const response = await fetch(`${API_BASE_URL}/api/documents`, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -300,7 +302,7 @@ export default function DashboardPage() {
       if (fields.pageEnd !== undefined)
         payload.pageEnd = Number(fields.pageEnd);
 
-      await fetch(`http://localhost:3001/api/chapters/${chapterId}`, {
+      await fetch(`${API_BASE_URL}/api/chapters/${chapterId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +359,7 @@ export default function DashboardPage() {
 
     if (id.length >= 5) {
       try {
-        await fetch(`http://localhost:3001/api/chapters/${id}`, {
+        await fetch(`${API_BASE_URL}/api/chapters/${id}`, {
           method: "DELETE",
           credentials: "include",
         });
@@ -399,7 +401,7 @@ export default function DashboardPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/chapters/${currentDocumentId}`,
+        `${API_BASE_URL}/api/chapters/${currentDocumentId}`,
         {
           method: "POST",
           headers: {
@@ -413,7 +415,7 @@ export default function DashboardPage() {
       if (resJson.success) {
         // Fetch chapters again to get database IDs
         const getRes = await fetch(
-          `http://localhost:3001/api/chapters/${currentDocumentId}`,
+          `${API_BASE_URL}/api/chapters/${currentDocumentId}`,
           {
             credentials: "include",
           },
@@ -464,7 +466,7 @@ export default function DashboardPage() {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3001/api/sessions", {
+      const response = await fetch(`${API_BASE_URL}/api/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

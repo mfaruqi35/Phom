@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
 
 interface Message {
   id: string;
@@ -20,7 +20,7 @@ const getUserInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = getApiBaseUrl();
 
 interface SessionChapter {
   id: string;

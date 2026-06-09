@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
+
+const API_BASE_URL = getApiBaseUrl();
 
 interface AnswerScoreItem {
   methodologyScore: number;
@@ -87,7 +89,7 @@ export default function HistoryPage() {
     const fetchHistory = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/sessions/user",
+          `${API_BASE_URL}/api/sessions/user`,
           {
             credentials: "include",
           },

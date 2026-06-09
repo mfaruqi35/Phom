@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getApiBaseUrl } from "@/lib/auth-client";
 
 interface QuestionReview {
   question: string;
@@ -50,7 +50,7 @@ interface EvaluationData {
   questionReviews: QuestionReview[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = getApiBaseUrl();
 
 const getUserInitials = (name?: string) => {
   if (!name) return "US";
