@@ -22,7 +22,11 @@ interface ChapterInfo {
 interface SessionChapter {
   id: string;
   chapterId: string;
-  chapter: ChapterInfo;
+  chapter: {
+    id?: string;
+    label?: string;
+    title: string;
+  };
 }
 
 interface SessionData {
@@ -35,11 +39,16 @@ interface SessionData {
   currentStep: number;
   isCompleted: boolean;
   createdAt: string;
+  completedAt?: string | null;
+  document?: {
+    title: string;
+  };
   sessionChapters?: SessionChapter[];
 }
 
 interface Question {
   id: string;
+  sessionId?: string;
   content: string;
   orderIndex: number;
   chapterId: string;
@@ -62,47 +71,6 @@ const getUserInitials = (name?: string) => {
 };
 
 const API_BASE_URL = getApiBaseUrl();
-
-interface SessionChapter {
-  id: string;
-  chapterId: string;
-  chapter: {
-    title: string;
-  };
-}
-
-interface SessionData {
-  id: string;
-  userId: string;
-  documentId: string;
-  mode: string;
-  totalQuestions: number;
-  currentStep: number;
-  isCompleted: boolean;
-  createdAt: string;
-  completedAt: string | null;
-  document?: {
-    title: string;
-  };
-  sessionChapters: SessionChapter[];
-}
-
-interface Question {
-  id: string;
-  sessionId: string;
-  chapterId: string;
-  content: string;
-  orderIndex: number;
-}
-
-interface DbMessage {
-  id: string;
-  role: "USER" | "AI";
-  content: string;
-  subTurn: number;
-  questionId: string;
-  createdAt: string;
-}
 
 const activeGenerations = new Set<string>();
 
