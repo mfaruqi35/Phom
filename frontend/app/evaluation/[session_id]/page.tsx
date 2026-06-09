@@ -101,13 +101,6 @@ export default function EvaluationPage() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  // Client-side route guard: redirect to "/" if not logged in
-  useEffect(() => {
-    if (!isPending && !session) {
-      router.push("/");
-    }
-  }, [session, isPending, router]);
-
   // Profile Dropdown state
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -477,7 +470,11 @@ export default function EvaluationPage() {
 
                 <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
                   Komite penguji AI menilai tingkat argumentasi dan penguasaan
-                  naskah Anda berada di kategori kelayakan <strong className="font-bold text-[#0B1C30]">{eligibilityGrade}</strong>.
+                  naskah Anda berada di kategori kelayakan{" "}
+                  <strong className="font-bold text-[#0B1C30]">
+                    {eligibilityGrade}
+                  </strong>
+                  .
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-3 mt-1">
@@ -531,8 +528,8 @@ export default function EvaluationPage() {
                               isNotTested
                                 ? "bg-gray-50 text-gray-500 border-gray-200"
                                 : isPass
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
-                                : "bg-amber-50 text-amber-700 border-amber-200/50"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/50"
+                                  : "bg-amber-50 text-amber-700 border-amber-200/50"
                             }`}
                           >
                             {ch.verdict}
