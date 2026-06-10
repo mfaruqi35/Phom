@@ -58,6 +58,39 @@ Phom/
 
 ---
 
+## 🧩 Komponen Sistem
+
+### Komponen Backend (Hono)
+* **Auth Component** — Better Auth, menangani registrasi, login, dan sesi.
+* **Document Component** — mengunggah dokumen, validasi tipe, dan polling status.
+* **Chapter Component** — melakukan parsing dan operasi CRUD bab.
+* **Session Component** — membuat, membaca, menyelesaikan, dan menghapus sesi.
+* **Question Component** — meng-generate pertanyaan via RAG dan membaca per sesi.
+* **Message Component** — mengirim jawaban dan men-trigger evaluasi otomatis.
+* **Answer Score Component** — menyimpan dan membaca nilai skor.
+* **Evaluation Component** — melakukan agregasi nilai untuk laporan akhir.
+
+### Komponen RAG Service (FastAPI)
+* **Validate Component** — klasifikasi dokumen akademik atau bukan.
+* **Parse TOC Component** — mengekstrak Daftar Isi bab dari PDF.
+* **Process Component** — melakukan chunking, embedding, dan simpan ke database.
+* **Generate Questions Component** — pipeline RAG + LLM untuk generate pertanyaan.
+* **Evaluate Component** — pipeline RAG + LLM untuk mengevaluasi jawaban.
+
+### Komponen Frontend (Next.js)
+* **Auth Component** — formulir login, registrasi, dan masuk lewat Google OAuth.
+* **Dashboard Component** — area unggah dokumen dan konfigurasi sesi simulasi.
+* **Workspace Component** — antarmuka obrolan (*chat interface*) simulasi sidang skripsi.
+* **Evaluation Component** — halaman laporan penilaian akhir sidang.
+* **History Component** — halaman riwayat seluruh sesi simulasi.
+
+### Komponen Infrastruktur
+* **Database Component** — database Supabase PostgreSQL + ekstensi `pgvector`.
+* **Storage Component** — Supabase Storage untuk menampung berkas PDF skripsi.
+* **Embedding Component** — model `sentence-transformers` lokal untuk komputasi vektor.
+
+---
+
 ## 👥 Tim Pengembang
 
 Proyek ini dikembangkan oleh **Kelompok-5B**:
