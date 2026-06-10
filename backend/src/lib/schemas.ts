@@ -190,6 +190,16 @@ export const questionReviewSchema = z
   })
   .openapi("QuestionReview");
 
+export const chapterBreakdownSchema = z
+  .object({
+    chapterId: cuidSchema,
+    label: z.string().openapi({ example: "I" }),
+    title: z.string().openapi({ example: "Pendahuluan" }),
+    score: z.number().nullable().openapi({ example: 72.5 }),
+    verdict: z.enum(["LULUS", "REVISI", "BELUM DIUJI"]).openapi({ example: "LULUS" }),
+  })
+  .openapi("ChapterBreakdown");
+
 export const evaluationReportSchema = z
   .object({
     session: sessionSchema,
@@ -199,6 +209,9 @@ export const evaluationReportSchema = z
       theory: z.number().openapi({ example: 3.2 }),
       argument: z.number().openapi({ example: 3.5 }),
     }),
+    averageRebuttal: z.number().openapi({ example: 1.2 }),
+    chapterBreakdown: z.array(chapterBreakdownSchema),
     questionReviews: z.array(questionReviewSchema),
   })
   .openapi("EvaluationReport");
+
