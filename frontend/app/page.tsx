@@ -94,22 +94,22 @@ export default function Home() {
         {/* Main Content */}
         <main className="pt-28 pb-20">
           {/* Hero Section */}
-          <section className="max-w-[1280px] mx-auto px-6 md:px-12 pt-12 md:pt-20 pb-20 overflow-hidden">
+          <section id="hero" className="max-w-[1280px] mx-auto px-6 md:px-12 pt-12 md:pt-20 pb-20 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Hero Content */}
               <div className="flex flex-col gap-6 z-10">
                 <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold text-text-primary leading-tight">
                   Kuasai Skripsimu dengan{" "}
                   <span className="bg-gradient-to-r from-[#3525cd] to-[#6f3dd9] bg-clip-text text-transparent">
-                    Phom
+                    Phom,
                   </span>{" "}
                   <span className="bg-gradient-to-r from-[#ff7e40] to-[#ff512f] bg-clip-text text-transparent">
-                    Precision
+                    Tanpa Panik
                   </span>
                 </h1>
                 <p className="font-body text-lg text-text-secondary max-w-xl leading-relaxed">
-                  Latih mental dan asah argumen penelitianmu sebelum sidang
-                  dengan AI.
+                  Latih ketenangan mental dan asah argumentasi akademismu
+                  melalui simulasi sidang berbasis AI.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
                   <button
@@ -244,13 +244,14 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="flex flex-col gap-6">
                   <h2 className="font-heading text-3xl font-extrabold text-text-primary leading-tight">
-                    Kalahkan Kecemasan Sidang, Bangun Otoritas Akademikmu
+                    Kalahkan Kecemasan, Amankan Kelulusanmu dengan Percaya Diri
                   </h2>
                   <p className="font-body text-md text-base text-text-secondary leading-relaxed">
-                    Kami percaya persiapan sidang bukan hanya menghafal slide,
-                    tetapi juga melatih mental, mempertahankan metodologi
-                    penelitian, dan menjawab pertanyaan penguji dengan percaya
-                    diri.
+                    Ubah rasa takut menjadi kesiapan penuh. Phom membantu kamu
+                    menguji ketahanan argumen, memetakan kelemahan skripsi
+                    secara personal, dan menguasai teknik penyampaian jawaban
+                    akademis yang terstruktur sebelum menghadapi sidang yang
+                    sesungguhnya.
                   </p>
                 </div>
 
@@ -260,12 +261,12 @@ export default function Home() {
                       01
                     </span>
                     <h3 className="font-heading text-lg font-bold text-text-primary">
-                      Mental Readiness
+                      Kesiapan Mental Maksimal
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      Hadapi simulasi pertanyaan agresif yang memicu stres
-                      mental agar terbiasa tenang dan fokus saat hari sidang
-                      yang sesungguhnya.
+                      Latih ketenangan dan fokus kamu melalui simulasi
+                      interaktif yang dirancang untuk menguji kesiapan
+                      psikologis dalam menghadapi tekanan sidang sesungguhnya.
                     </p>
                   </div>
                   <div className="bg-surface-raised border border-border/60 p-6 rounded-xl flex flex-col gap-3">
@@ -273,12 +274,12 @@ export default function Home() {
                       02
                     </span>
                     <h3 className="font-heading text-lg font-bold text-text-primary">
-                      Methodology Test
+                      Validasi Metodologi Tanpa Celah
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      AI kami menyoroti setiap inkonsistensi data, kelemahan
-                      asumsi dasar, dan celah penelitian sebelum komite penguji
-                      Anda mengetahuinya.
+                      Deteksi dini setiap inkonsistensi data atau kelemahan
+                      argumen penelitian secara mandiri sebelum komite dosen
+                      penguji menemukannya.
                     </p>
                   </div>
                   <div className="bg-surface-raised border border-border/60 p-6 rounded-xl flex flex-col gap-3">
@@ -286,12 +287,12 @@ export default function Home() {
                       03
                     </span>
                     <h3 className="font-heading text-lg font-bold text-text-primary">
-                      Argument Blueprint
+                      Struktur Pertahanan Argumen
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      Pelajari pola sanggahan terbaik dengan &ldquo;Saran
-                      Perbaikan Kalimat&rdquo; akademis untuk memposisikan ulang
-                      temuan riset Anda secara kuat.
+                      Kuasai pola sanggahan terbaik lewat rekonstruksi kalimat
+                      akademis agar kamu mampu mempertahankan bobot temuan riset
+                      secara objektif.
                     </p>
                   </div>
                   <div className="bg-surface-raised border border-border/60 p-6 rounded-xl flex flex-col gap-3">
@@ -299,12 +300,12 @@ export default function Home() {
                       04
                     </span>
                     <h3 className="font-heading text-lg font-bold text-text-primary">
-                      RAG Technology
+                      Evaluasi Komprehensif Per Bab
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      AI membaca dokumen skripsi secara keseluruhan via
-                      embedding dan vector database, memberikan tinjauan
-                      mendalam per bab.
+                      Dapatkan ulasan mendalam yang dipetakan langsung dari
+                      struktur bab skripsi kamu, sehingga kamu tahu pasti bagian
+                      mana yang memerlukan perbaikan.
                     </p>
                   </div>
                 </div>
@@ -395,7 +396,7 @@ export default function Home() {
           </section>
 
           {/* Section: Fitur Unggulan Lebih Mendalam */}
-          <section className="bg-surface-raised border-y border-border/60 py-20">
+          <section id="core-features" className="bg-surface-raised border-y border-border/60 py-20">
             <div className="max-w-[1280px] mx-auto px-6 md:px-12">
               <div className="text-center mb-16 max-w-2xl mx-auto">
                 <span className="text-primary font-bold tracking-wider uppercase text-xs">
@@ -428,7 +429,7 @@ export default function Home() {
                       dengan isi bab yang Anda pilih untuk disimulasikan.
                     </p>
                   </div>
-                  <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4 lg:order-1">
+                  <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4 lg:order-1 transform -rotate-1 hover:rotate-0 hover:shadow-xl transition-all duration-700 ease-out origin-bottom-left">
                     <div className="flex justify-between items-center text-xs font-bold text-text-secondary border-b border-border/60 pb-3">
                       <span>PENCARIAN KONTEKS RAG</span>
                       <span className="text-primary bg-primary-subtle px-2 py-0.5 rounded border border-primary/10">
@@ -495,7 +496,7 @@ export default function Home() {
                       panik.
                     </p>
                   </div>
-                  <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4">
+                  <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4 transform rotate-1 hover:rotate-0 hover:shadow-xl transition-all duration-700 ease-out origin-bottom-right">
                     <div className="flex justify-between items-center text-xs font-bold text-text-secondary border-b border-border/60 pb-3">
                       <span>SIMULASI OBROLAN SIDANG</span>
                       <span className="text-accent bg-accent-subtle px-2 py-0.5 rounded border border-accent/10">
@@ -565,7 +566,7 @@ export default function Home() {
                       sebelum hari-H.
                     </p>
                   </div>
-                  <div className="bg-surface border border-border p-8 rounded-xl shadow-sm flex flex-col items-center justify-center gap-6 lg:order-1">
+                  <div className="bg-surface border border-border p-8 rounded-xl shadow-sm flex flex-col items-center justify-center gap-6 lg:order-1 transform -rotate-1 hover:rotate-0 hover:shadow-xl transition-all duration-700 ease-out origin-bottom-left">
                     <div className="relative w-36 h-36 flex items-center justify-center rounded-full border-8 border-primary-subtle border-t-primary animate-pulse">
                       <div className="text-center">
                         <div className="text-3xl font-heading font-extrabold text-text-primary">
