@@ -63,12 +63,6 @@ export default function Navbar({ scrolled, openAuthModal }: NavbarProps) {
                 >
                   Simulasi AI Sidang
                 </a>
-                <a
-                  href="#solutions"
-                  className="block px-3.5 py-2 text-xs font-semibold text-gray-600 hover:bg-indigo-50/50 hover:text-[#3525cd] rounded-xl transition-all"
-                >
-                  Evaluasi Metodologi
-                </a>
               </div>
             </div>
           </div>

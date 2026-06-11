@@ -6,7 +6,6 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import SlidingAuthCard from "@/components/auth-card";
 
-
 // Main Landing Page Component
 export default function Home() {
   const lenis = useLenis();
@@ -19,7 +18,7 @@ export default function Home() {
   const [isClosing, setIsClosing] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
-  // Intercept anchor link clicks for smooth scrolling with Lenis
+  // Intercept anchor link clicks for smooth scrolling with Lenis and tab selection
   useEffect(() => {
     const handleAnchorClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a[href^="#"]');
@@ -28,8 +27,16 @@ export default function Home() {
       const href = target.getAttribute("href");
       if (!href) return;
 
-      const id = href.slice(1);
+      let id = href.slice(1);
       if (!id) return;
+
+      if (id.startsWith("solutions-")) {
+        const tab = id.replace("solutions-", "");
+        if (["methodology", "theory", "argument"].includes(tab)) {
+          setActiveTab(tab);
+          id = "solutions";
+        }
+      }
 
       const el = document.getElementById(id);
       if (el) {
@@ -101,9 +108,8 @@ export default function Home() {
                   </span>
                 </h1>
                 <p className="font-body text-lg text-text-secondary max-w-xl leading-relaxed">
-                  Latih mental, uji metodologi penelitian, dan perkuat argumen
-                  akademismu sebelum menghadapi komite penguji sesungguhnya
-                  dengan simulator bertenaga AI.
+                  Latih mental dan asah argumen penelitianmu sebelum sidang
+                  dengan AI.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
                   <button
@@ -237,26 +243,14 @@ export default function Home() {
             <div className="max-w-[1280px] mx-auto px-6 md:px-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="flex flex-col gap-6">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <span className="material-symbols-outlined text-2xl font-bold">
-                      school
-                    </span>
-                  </div>
                   <h2 className="font-heading text-3xl font-extrabold text-text-primary leading-tight">
                     Kalahkan Kecemasan Sidang, Bangun Otoritas Akademikmu
                   </h2>
-                  <p className="font-body text-base text-text-secondary leading-relaxed">
-                    <strong>Phom</strong> (diambil dari bahasa Aceh yang berarti{" "}
-                    <strong>paham</strong>) adalah platform SaaS simulator
-                    sidang skripsi berbasis AI pertama di Indonesia yang
-                    dirancang khusus untuk mahasiswa tingkat akhir.
-                  </p>
-                  <p className="font-body text-base text-text-secondary leading-relaxed">
-                    Kami percaya bahwa persiapan sidang bukan sekadar tentang
-                    menghafal slide presentasi, melainkan melatih ketahanan
-                    mental dalam mempertahankan metodologi penelitian,
-                    memvalidasi konsistensi argumentasi, dan merespons sanggahan
-                    kritis komite penguji dengan logis dan percaya diri.
+                  <p className="font-body text-md text-base text-text-secondary leading-relaxed">
+                    Kami percaya persiapan sidang bukan hanya menghafal slide,
+                    tetapi juga melatih mental, mempertahankan metodologi
+                    penelitian, dan menjawab pertanyaan penguji dengan percaya
+                    diri.
                   </p>
                 </div>
 
@@ -295,9 +289,9 @@ export default function Home() {
                       Argument Blueprint
                     </h3>
                     <p className="font-body text-xs text-text-secondary leading-relaxed">
-                      Pelajari pola sanggahan terbaik dengan &ldquo;Saran Perbaikan
-                      Kalimat&rdquo; akademis untuk memposisikan ulang temuan riset
-                      Anda secara kuat.
+                      Pelajari pola sanggahan terbaik dengan &ldquo;Saran
+                      Perbaikan Kalimat&rdquo; akademis untuk memposisikan ulang
+                      temuan riset Anda secara kuat.
                     </p>
                   </div>
                   <div className="bg-surface-raised border border-border/60 p-6 rounded-xl flex flex-col gap-3">
@@ -325,12 +319,12 @@ export default function Home() {
           >
             <div className="text-center mb-16 max-w-2xl mx-auto">
               <h2 className="font-heading text-3xl font-extrabold text-text-primary mb-4">
-                Comprehensive Defense Preparation
+                Simulasi Sidang Komprehensif
               </h2>
               <p className="font-body text-base text-text-secondary leading-relaxed">
-                AI canggih kami membedah naskah skripsi Anda secara semantik
-                untuk memproyeksikan daftar pertanyaan tersulit yang paling
-                mungkin diajukan dosen penguji.
+                Phom memproyeksikan simulasi ujian sidang yang nyata berdasarkan
+                naskah asli skripsi Anda untuk melatih mental dan pemahaman
+                riset Anda.
               </p>
             </div>
 
@@ -347,12 +341,12 @@ export default function Home() {
                   </span>
                 </div>
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
-                  AI Committee Simulation
+                  Komite Penguji AI Kritis
                 </h3>
                 <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
-                  Uji kemampuan akademismu melawan berbagai tipe penguji
-                  AI—mulai dari yang membimbing secara konstruktif hingga yang
-                  agresif menguji detail riset Anda.
+                  Hadapi simulasi dengan AI penguji yang bertindak kritis,
+                  objektif, dan ketat layaknya dosen penguji asli untuk menguji
+                  argumen naskah akademik Anda.
                 </p>
               </div>
 
@@ -368,12 +362,12 @@ export default function Home() {
                   </span>
                 </div>
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
-                  Deep Scrutiny
+                  Fokus Pengujian Per Bab
                 </h3>
                 <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
-                  Analisis mendalam otomatis untuk memetakan kelemahan teori,
-                  kontradiksi hasil Bab 4, hingga validitas data sampel. Tidak
-                  ada celah yang terlewat.
+                  Tentukan sendiri bab-bab spesifik yang ingin diujikan terlebih
+                  dahulu guna melatih pemahaman Anda secara bertahap dan
+                  terfokus.
                 </p>
               </div>
 
@@ -389,12 +383,12 @@ export default function Home() {
                   </span>
                 </div>
                 <h3 className="font-heading text-lg font-bold text-text-primary mb-3">
-                  Confidence Scoring
+                  Skor &amp; Laporan Evaluasi
                 </h3>
                 <p className="font-body text-sm text-text-secondary mb-0 leading-relaxed">
-                  Pantau grafik kesiapan sidangmu dari waktu ke waktu dengan
-                  skor kuantitatif 0-100 di tiga aspek: Metodologi, Teori, dan
-                  Ketahanan Argumentasi.
+                  Dapatkan umpan balik instan, skor kelayakan sidang 0-100, dan
+                  saran rekonstruksi kalimat akademis setelah sesi simulasi
+                  selesai.
                 </p>
               </div>
             </div>
@@ -424,10 +418,10 @@ export default function Home() {
                     </h3>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Di ruang sidang sesungguhnya, dosen tidak selalu puas
-                      dengan jawaban pertama Anda. Phom didesain dengan
-                      mekanisme <b>sub-turn</b>. Jika argumen pertama Anda
-                      lemah, AI penguji akan membantah jawaban Anda dengan
-                      sanggahan kritis (maksimal 2 kali sanggahan).
+                      dengan jawaban pertamamu. Phom didesain dengan mekanisme{" "}
+                      <b>sub-turn</b>. Jika argumen pertamamu lemah, AI penguji
+                      akan membantah jawaban Kamu dengan sanggahan kritis
+                      (maksimal 2 kali sanggahan).
                     </p>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Mekanisme ini melatih stamina mental Anda untuk
@@ -443,9 +437,9 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="bg-surface-raised p-4 rounded-lg border border-border/40 text-xs text-text-primary leading-relaxed">
-                      Definisi &ldquo;theoretical saturation&rdquo; Anda pada Bab 3 belum
-                      jelas. Anda menyebutkan wawancara selesai pada informan
-                      ke-15, tapi apa indikator saturasi datanya?
+                      Definisi &ldquo;theoretical saturation&rdquo; Anda pada
+                      Bab 3 belum jelas. Anda menyebutkan wawancara selesai pada
+                      informan ke-15, tapi apa indikator saturasi datanya?
                     </div>
                     <div className="bg-primary text-white p-4 rounded-lg text-xs leading-relaxed text-right ml-10">
                       Kami menentukan saturasi data saat 3 wawancara terakhir
@@ -474,9 +468,10 @@ export default function Home() {
                       <div>🗣️ Ketahanan Argumentasi (Bobot 30%)</div>
                     </div>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
-                      Nilai akhir berkisar dari skala **0 hingga 100**,
-                      dilengkapi dengan visualisasi kelemahan per bab untuk
-                      perbaikan cepat sebelum hari-H.
+                      Nilai akhir berkisar dari skala{" "}
+                      <strong>0 hingga 100</strong>, dilengkapi dengan
+                      visualisasi kelemahan per bab untuk perbaikan cepat
+                      sebelum hari-H.
                     </p>
                   </div>
                   <div className="bg-surface border border-border p-8 rounded-xl shadow-sm flex flex-col items-center justify-center gap-6 lg:order-1">
@@ -518,11 +513,11 @@ export default function Home() {
           >
             <div className="text-center mb-16 max-w-2xl mx-auto">
               <h2 className="font-heading text-3xl font-extrabold text-text-primary mb-4">
-                Solutions Tailored for Every Researcher
+                Evaluasi Terarah untuk Setiap Aspek Skripsi
               </h2>
               <p className="font-body text-base text-text-secondary leading-relaxed">
-                Pilih fokus uji coba yang paling krusial untuk naskah skripsi
-                Anda saat ini.
+                Phom menguji draf naskah Anda secara mendalam pada tiga pilar
+                utama penilaian sidang skripsi standar akademik.
               </p>
             </div>
 
@@ -536,7 +531,7 @@ export default function Home() {
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
-                  Methodology Stress-Test
+                  Stress-Test Metodologi
                 </button>
                 <button
                   onClick={() => setActiveTab("theory")}
@@ -546,7 +541,7 @@ export default function Home() {
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
-                  Theoretical Foundation
+                  Pengujian Teori
                 </button>
                 <button
                   onClick={() => setActiveTab("argument")}
@@ -556,7 +551,7 @@ export default function Home() {
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
-                  Argument Weakness
+                  Analisis Argumentasi
                 </button>
               </div>
             </div>
@@ -566,33 +561,35 @@ export default function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="flex flex-col gap-6">
                     <h3 className="font-heading text-2xl font-extrabold text-text-primary">
-                      Rigorous Methodological Stress-Test
+                      Stress-Test Metodologi &amp; Validitas (Bobot 40%)
                     </h3>
                     <p className="font-body text-base text-text-secondary leading-relaxed">
-                      Identifikasi celah fatal dalam metodologi dan desain
-                      penelitian Anda sebelum dosen penguji mengetahuinya.
-                      Evaluasi mencakup ketepatan model regresi, ukuran sampel,
-                      dan bias variabel.
+                      Identifikasi celah dalam desain penelitian, metode
+                      sampling, batasan penelitian, dan konsistensi pengolahan
+                      data Anda. AI akan menguji apakah metode yang Anda gunakan
+                      valid untuk menjawab rumusan masalah.
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Menghindari bias sampling dan batasan penelitian yang
-                        rapuh.
+                        Mendeteksi bias sampling dan batasan penelitian yang
+                        kurang logis.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Memvalidasi robustness data kuantitatif / kualitatif.
+                        Memvalidasi robustness data hasil analisis kuantitatif
+                        maupun kualitatif.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Uji konsistensi instrumen pengukuran variabel.
+                        Mendeteksi jawaban asal-asalan untuk melatih ketepatan
+                        penjelasan akademis.
                       </li>
                     </ul>
                   </div>
@@ -620,37 +617,38 @@ export default function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="flex flex-col gap-6">
                     <h3 className="font-heading text-2xl font-extrabold text-text-primary">
-                      Theoretical Foundation Check
+                      Pengujian Teori &amp; Tinjauan Pustaka (Bobot 30%)
                     </h3>
                     <p className="font-body text-base text-text-secondary leading-relaxed">
-                      Uji keselarasan kerangka teoretis dengan rumusan masalah
-                      dan temuan data di Bab 4. AI memastikan transisi teoretis
-                      Anda kokoh.
+                      Uji keselarasan kerangka teoretis yang Anda gunakan dengan
+                      temuan hasil penelitian di Bab 4. AI memastikan pemahaman
+                      konsep dan landasan teori Anda kokoh serta relevan.
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Validasi keselarasan paradigma teoretis yang digunakan.
+                        Validasi keselarasan paradigma teori dengan rumusan
+                        masalah.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Deteksi ketimpangan sitasi teori pendukung.
+                        Deteksi ketimpangan sitasi dan rujukan teori pendukung.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Menghubungkan temuan mikro ke teori makro secara
+                        Menghubungkan temuan lapangan dengan teori secara
                         koheren.
                       </li>
                     </ul>
                   </div>
                   <div className="bg-surface-raised border border-border p-6 rounded-xl flex flex-col gap-4">
-                    <div className="h-6 w-1/3 bg-indigo-55 bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded flex items-center justify-center">
+                    <div className="h-6 w-1/3 bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded flex items-center justify-center">
                       TEORI
                     </div>
                     <div className="space-y-2">
@@ -672,31 +670,34 @@ export default function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="flex flex-col gap-6">
                     <h3 className="font-heading text-2xl font-extrabold text-text-primary">
-                      Argument Weakness Diagnostics
+                      Ketahanan &amp; Kelogisan Argumentasi (Bobot 30%)
                     </h3>
                     <p className="font-body text-base text-text-secondary leading-relaxed">
-                      Evaluasi retorika dan ketahanan jawaban Anda saat ditekan
-                      oleh sanggahan kritis AI.
+                      Simulasikan ketahanan mental dan argumen Anda saat
+                      menghadapi sanggahan kritis berulang (maksimal 2 kali
+                      sanggahan per pertanyaan) dari komite penguji AI.
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Menghindari jawaban defensif yang melemahkan otoritas.
+                        Melatih respons taktis dan akademis terhadap sanggahan
+                        kritis.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Penyusunan ulang kalimat sanggahan dengan tata bahasa
-                        akademis.
+                        Menghindari jawaban defensif atau subjektif yang
+                        melemahkan argumen.
                       </li>
                       <li className="flex items-center gap-3 text-sm font-semibold text-text-secondary">
                         <span className="material-symbols-outlined text-primary text-lg">
                           check_circle
                         </span>
-                        Peta kelemahan jawaban per pertanyaan simulasi.
+                        Evaluasi mendalam per jawaban untuk perbaikan gaya
+                        penyampaian.
                       </li>
                     </ul>
                   </div>
@@ -728,7 +729,7 @@ export default function Home() {
           >
             <div className="text-center mb-16 max-w-2xl mx-auto">
               <span className="text-primary font-bold tracking-wider uppercase text-xs">
-                Petunjuk Penggunaan
+                Cara Pakai
               </span>
               <h2 className="font-heading text-3xl font-extrabold text-text-primary mt-2">
                 Langkah Menuju Kelulusan dengan Phom
@@ -784,9 +785,10 @@ export default function Home() {
                     </h3>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Pilih bab mana saja yang ingin diuji saat ini, lalu pilih
-                      mode intensitas sesi: *Quick Review* (3-5 pertanyaan),
-                      *Standard Exam* (8-10 pertanyaan), atau *Deep Drill*
-                      (12-15 pertanyaan) untuk ulasan super mendalam.
+                      mode intensitas sesi: <strong>Quick Review</strong> (3-5
+                      pertanyaan), <strong>Standard Exam</strong> (8-10
+                      pertanyaan), atau <strong>Deep Drill</strong> (12-15
+                      pertanyaan) untuk ulasan super mendalam.
                     </p>
                   </div>
                 </div>
@@ -861,7 +863,8 @@ export default function Home() {
                 Frequently Asked Questions
               </h2>
               <p className="font-body text-base text-text-secondary">
-                Pertanyaan umum seputar penggunaan simulator skripsi Phom.
+                Pertanyaan umum seputar penggunaan{" "}
+                <span className="font-bold">Phom</span>.
               </p>
             </div>
 
@@ -891,10 +894,9 @@ export default function Home() {
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
                     Ya, keamanan data adalah prioritas utama kami. Semua berkas
-                    yang Anda unggah dienkripsi secara penuh di penyimpanan
-                    Supabase Storage pribadi. Naskah Anda tidak akan
-                    dipublikasikan secara umum dan tidak digunakan untuk melatih
-                    model publik.
+                    yang Kamu unggah dienkripsi secara penuh di penyimpanan
+                    Supabase Storage pribadi. Naskahmu tidak akan dipublikasikan
+                    secara umum dan tidak digunakan untuk melatih model publik.
                   </p>
                 </div>
               </div>
@@ -957,8 +959,8 @@ export default function Home() {
                   }`}
                 >
                   <p className="font-body text-sm text-text-secondary leading-relaxed">
-                    Tentu! Pada bagian dashboard simulator, Anda dapat memilih
-                    fokus bab secara spesifik menggunakan pill selector. Anda
+                    Tentu! Pada bagian dashboard simulator, Kamu dapat memilih
+                    fokus bab secara spesifik menggunakan pill selector. Kamu
                     bisa memilih Bab 3 saja untuk fokus mematangkan metodologi,
                     atau memilih beberapa bab sekaligus sesuai kebutuhan.
                   </p>
@@ -1008,11 +1010,11 @@ export default function Home() {
 
               <div className="relative z-10 max-w-xl text-center md:text-left">
                 <h2 className="font-heading text-3xl font-extrabold text-white mb-4">
-                  Don&apos;t Leave Your Success to Chance
+                  Tingkatkan Peluang Sukses Sidangmu
                 </h2>
                 <p className="font-body text-sm md:text-base text-primary-subtle mb-0 leading-relaxed">
-                  Gabung bersama ribuan mahasiswa sukses lainnya yang menghadapi
-                  sidang skripsi mereka dengan keyakinan akademis yang matang.
+                  Latih mental, uji pemahaman penelitian, dan hadapi penguji
+                  dengan lebih percaya diri menggunakan simulasi AI.
                 </p>
               </div>
 

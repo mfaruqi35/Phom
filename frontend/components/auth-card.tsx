@@ -67,9 +67,12 @@ export default function SlidingAuthCard({
         },
         onError: (ctx) => {
           setIsLoading(false);
-          setError(ctx.error.message || "Gagal masuk. Silakan periksa kembali email dan password Anda.");
+          setError(
+            ctx.error.message ||
+              "Gagal masuk. Silakan periksa kembali email dan password Anda.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -120,7 +123,7 @@ export default function SlidingAuthCard({
           setIsLoading(false);
           setError(ctx.error.message || "Gagal mendaftar. Silakan coba lagi.");
         },
-      }
+      },
     );
   };
 
@@ -135,7 +138,8 @@ export default function SlidingAuthCard({
       });
     } catch (err: unknown) {
       setIsLoading(false);
-      const errMsg = err instanceof Error ? err.message : "Gagal masuk dengan Google.";
+      const errMsg =
+        err instanceof Error ? err.message : "Gagal masuk dengan Google.";
       setError(errMsg);
     }
   };
@@ -303,7 +307,7 @@ export default function SlidingAuthCard({
             disabled={isLoading}
             className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
           >
-            {isLoading ? "Sedang Masuk..." : "MASUK"}
+            {isLoading ? "Sedang Masuk..." : "SIGN IN"}
           </button>
 
           {/* Google Sign In Option */}
@@ -415,7 +419,7 @@ export default function SlidingAuthCard({
             disabled={isLoading}
             className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-3"
           >
-            {isLoading ? "Membuat Akun..." : "DAFTAR"}
+            {isLoading ? "Membuat Akun..." : "SIGN UP"}
           </button>
 
           {/* Google Sign In Option */}
@@ -447,10 +451,10 @@ export default function SlidingAuthCard({
           {/* Left Overlay panel (Signin trigger) */}
           <div className="overlay-panel overlay-left">
             <h1 className="text-3xl font-bold mb-3 tracking-tight text-white">
-              Welcome Back!
+              Yuk, Lanjutkan!
             </h1>
-            <p className="text-xs leading-relaxed opacity-85 mb-8 max-w-[250px] text-white">
-              To keep connected with us please login with your personal info
+            <p className="text-md leading-relaxed opacity-85 mb-8 max-w-87.5 text-white">
+              Masuk ke akunmu dan lanjutkan persiapan sidang bersama Phom.
             </p>
             <button
               onClick={() => setIsSignUp(false)}
@@ -463,10 +467,11 @@ export default function SlidingAuthCard({
           {/* Right Overlay panel (Signup trigger) */}
           <div className="overlay-panel overlay-right">
             <h1 className="text-3xl font-bold mb-3 tracking-tight text-white">
-              Hey There!
+              Hai!
             </h1>
-            <p className="text-xs leading-relaxed opacity-85 mb-8 max-w-[250px] text-white">
-              Begin your amazing journey by creating an account with us today
+            <p className="text-md leading-relaxed opacity-85 mb-8 max-w-87.5 text-white">
+              Buat akun dan mulai persiapkan dirimu menghadapi sidang bersama
+              Phom.
             </p>
             <button
               onClick={() => setIsSignUp(true)}
