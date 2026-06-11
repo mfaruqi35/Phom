@@ -280,16 +280,6 @@ export default function SlidingAuthCard({
             </div>
           </div>
 
-          {/* Forgot Password Link */}
-          <div className="flex justify-end text-xs text-gray-500 font-medium">
-            <a
-              href="#"
-              className="hover:underline hover:text-primary transition-colors"
-            >
-              Lupa password?
-            </a>
-          </div>
-
           {/* Submit button */}
           <button
             type="submit"
