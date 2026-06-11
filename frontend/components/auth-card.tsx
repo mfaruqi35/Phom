@@ -25,6 +25,8 @@ export default function SlidingAuthCard({
   // Sign In Form States
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   // Sign Up Form States
   const [signUpName, setSignUpName] = useState("");
@@ -35,6 +37,48 @@ export default function SlidingAuthCard({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!forgotEmail) {
+      setError("Silakan masukkan alamat email Anda.");
+      return;
+    }
+
+    // Email validation using a basic regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(forgotEmail)) {
+      setError("Format email tidak valid.");
+      return;
+    }
+
+    await authClient.requestPasswordReset(
+      {
+        email: forgotEmail,
+        redirectTo: `${window.location.origin}/reset-password`,
+      },
+      {
+        onRequest: () => {
+          setIsLoading(true);
+        },
+        onSuccess: () => {
+          setIsLoading(false);
+          setSuccess("Tautan reset kata sandi telah dikirim! Silakan periksa email Anda.");
+          setForgotEmail("");
+        },
+        onError: (ctx) => {
+          setIsLoading(false);
+          setError(
+            ctx.error.message ||
+              "Gagal mengirim email pemulihan. Pastikan email Anda benar.",
+          );
+        },
+      }
+    );
+  };
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,91 +276,169 @@ export default function SlidingAuthCard({
 
       {/* 1. SIGN IN (LOGIN) FORM PANEL */}
       <div className="form-container sign-in-container flex flex-col justify-center px-10 md:px-14 py-8">
-        <form onSubmit={handleSignInSubmit} className="space-y-6 text-center">
-          <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">
-              Sign In
-            </h1>
-            <p className="text-xs text-gray-400">
-              Masuk untuk melanjutkan uji coba sidang
-            </p>
-          </div>
-
-          {/* Error alert */}
-          {error && !isSignUp && (
-            <span className="text-red-500 text-xs block text-left bg-red-50 p-2.5 rounded border border-red-100 animate-fadeIn">
-              {error}
-            </span>
-          )}
-
-          {/* Fields */}
-          <div className="space-y-3.5 text-left">
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
-                mail
-              </span>
-              <input
-                type="email"
-                placeholder="Alamat Email"
-                value={signInEmail}
-                onChange={(e) => setSignInEmail(e.target.value)}
-                required
-                className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
-              />
+        {isForgotPassword ? (
+          <form onSubmit={handleForgotPasswordSubmit} className="space-y-6 text-center">
+            <div className="space-y-1.5">
+              <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">
+                Reset Password
+              </h1>
+              <p className="text-xs text-gray-400">
+                Masukkan email Anda untuk menerima tautan pemulihan
+              </p>
             </div>
 
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
-                lock
+            {/* Error alert */}
+            {error && !isSignUp && (
+              <span className="text-red-500 text-xs block text-left bg-red-50 p-2.5 rounded border border-red-100 animate-fadeIn">
+                {error}
               </span>
-              <input
-                type="password"
-                placeholder="Password"
-                value={signInPassword}
-                onChange={(e) => setSignInPassword(e.target.value)}
-                required
-                className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
-              />
-            </div>
-          </div>
+            )}
+            {/* Success alert */}
+            {success && !isSignUp && (
+              <span className="text-green-600 text-xs block text-left bg-green-50 p-2.5 rounded border border-green-100 animate-fadeIn">
+                {success}
+              </span>
+            )}
 
-          {/* Forgot Password Link */}
-          <div className="flex justify-end text-xs text-gray-500 font-medium">
-            <a
-              href="#"
-              className="hover:underline hover:text-primary transition-colors"
+            {/* Fields */}
+            <div className="space-y-3.5 text-left">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
+                  mail
+                </span>
+                <input
+                  type="email"
+                  placeholder="Alamat Email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                />
+              </div>
+            </div>
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
             >
-              Lupa password?
-            </a>
-          </div>
+              {isLoading ? "Sedang Mengirim..." : "KIRIM TAUTAN"}
+            </button>
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
-          >
-            {isLoading ? "Sedang Masuk..." : "SIGN IN"}
-          </button>
+            {/* Back to sign in link */}
+            <div className="text-xs font-medium text-gray-500">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setError("");
+                  setSuccess("");
+                }}
+                className="hover:underline text-primary focus:outline-none"
+              >
+                Kembali ke halaman masuk
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleSignInSubmit} className="space-y-6 text-center">
+            <div className="space-y-1.5">
+              <h1 className="text-3xl font-bold text-gray-800 tracking-tight font-heading">
+                Sign In
+              </h1>
+              <p className="text-xs text-gray-400">
+                Masuk untuk melanjutkan uji coba sidang
+              </p>
+            </div>
 
-          {/* Google Sign In Option */}
-          <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-gray-200/60"></div>
-            <span className="flex-shrink mx-4 text-gray-400 text-[10px] uppercase font-bold tracking-wider">
-              atau
-            </span>
-            <div className="flex-grow border-t border-gray-200/60"></div>
-          </div>
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
-          >
-            <i className="fa-brands fa-google text-[#EA4335] text-sm flex-shrink-0"></i>
-            <span>Masuk dengan Google</span>
-          </button>
-        </form>
+            {/* Error alert */}
+            {error && !isSignUp && (
+              <span className="text-red-500 text-xs block text-left bg-red-50 p-2.5 rounded border border-red-100 animate-fadeIn">
+                {error}
+              </span>
+            )}
+            {/* Success alert */}
+            {success && !isSignUp && (
+              <span className="text-green-600 text-xs block text-left bg-green-50 p-2.5 rounded border border-green-100 animate-fadeIn">
+                {success}
+              </span>
+            )}
+
+            {/* Fields */}
+            <div className="space-y-3.5 text-left">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
+                  mail
+                </span>
+                <input
+                  type="email"
+                  placeholder="Alamat Email"
+                  value={signInEmail}
+                  onChange={(e) => setSignInEmail(e.target.value)}
+                  required
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                />
+              </div>
+
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-base">
+                  lock
+                </span>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={signInPassword}
+                  onChange={(e) => setSignInPassword(e.target.value)}
+                  required
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition-all focus:ring-4 focus:ring-primary/10"
+                />
+              </div>
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="flex justify-end text-xs text-gray-500 font-medium">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(true);
+                  setError("");
+                  setSuccess("");
+                }}
+                className="hover:underline hover:text-primary transition-colors focus:outline-none"
+              >
+                Lupa password?
+              </button>
+            </div>
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-[0.98] mt-2"
+            >
+              {isLoading ? "Sedang Masuk..." : "SIGN IN"}
+            </button>
+
+            {/* Google Sign In Option */}
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-gray-200/60"></div>
+              <span className="flex-shrink mx-4 text-gray-400 text-[10px] uppercase font-bold tracking-wider">
+                atau
+              </span>
+              <div className="flex-grow border-t border-gray-200/60"></div>
+            </div>
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="w-full h-11 rounded-xl border border-gray-200 hover:border-primary bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center justify-center gap-2.5 active:scale-[0.98] shadow-sm"
+            >
+              <i className="fa-brands fa-google text-[#EA4335] text-sm flex-shrink-0"></i>
+              <span>Masuk dengan Google</span>
+            </button>
+          </form>
+        )}
       </div>
 
       {/* SIGN UP (REGISTER) FORM PANEL */}
