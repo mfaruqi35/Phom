@@ -25,7 +25,6 @@ export default function SlidingAuthCard({
   // Sign In Form States
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
-  const [signInRemember, setSignInRemember] = useState(false);
 
   // Sign Up Form States
   const [signUpName, setSignUpName] = useState("");
@@ -51,7 +50,6 @@ export default function SlidingAuthCard({
       {
         email: signInEmail,
         password: signInPassword,
-        rememberMe: signInRemember,
       },
       {
         onRequest: () => {
@@ -282,17 +280,8 @@ export default function SlidingAuthCard({
             </div>
           </div>
 
-          {/* Remember & Forgot */}
-          <div className="flex justify-between items-center text-xs text-gray-500 font-medium">
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={signInRemember}
-                onChange={(e) => setSignInRemember(e.target.checked)}
-                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20 accent-primary"
-              />
-              <span>Ingat saya</span>
-            </label>
+          {/* Forgot Password Link */}
+          <div className="flex justify-end text-xs text-gray-500 font-medium">
             <a
               href="#"
               className="hover:underline hover:text-primary transition-colors"

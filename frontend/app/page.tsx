@@ -406,8 +406,74 @@ export default function Home() {
                 </h2>
               </div>
 
-              <div className="space-y-16">
-                {/* Deep Feature 1 */}
+              <div className="space-y-20">
+                {/* Deep Feature 1: Semantik RAG */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <div className="space-y-5 lg:order-2">
+                    <div className="inline-flex items-center gap-2 bg-primary-subtle text-primary border border-primary/20 px-3.5 py-1 rounded-full text-xs font-semibold">
+                      Analisis Konteks
+                    </div>
+                    <h3 className="font-heading text-2xl font-extrabold text-text-primary">
+                      Pencarian Konteks Presisi (RAG)
+                    </h3>
+                    <p className="font-body text-sm text-text-secondary leading-relaxed">
+                      AI kami tidak menebak-nebak jawaban Anda. Dengan teknologi
+                      **Retrieval-Augmented Generation (RAG)** lokal, Phom
+                      secara semantik mencocokkan argumen Anda langsung dengan
+                      data primer, teori, dan metodologi yang tertulis di dalam
+                      draf PDF skripsi Anda secara presisi.
+                    </p>
+                    <p className="font-body text-sm text-text-secondary leading-relaxed">
+                      Hal ini memastikan setiap pertanyaan penguji AI relevan
+                      dengan isi bab yang Anda pilih untuk disimulasikan.
+                    </p>
+                  </div>
+                  <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4 lg:order-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-text-secondary border-b border-border/60 pb-3">
+                      <span>PENCARIAN KONTEKS RAG</span>
+                      <span className="text-primary bg-primary-subtle px-2 py-0.5 rounded border border-primary/10">
+                        Presisi Tinggi
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {/* Document Chunk Visual */}
+                      <div className="bg-slate-50 border border-dashed border-slate-200 p-3 rounded-lg text-[11px] text-text-secondary leading-relaxed font-mono">
+                        <div className="text-[10px] text-primary font-bold uppercase mb-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">
+                            description
+                          </span>
+                          PDF Chunk: Bab 3 (Halaman 42)
+                        </div>
+                        &ldquo;...Penelitian ini mengadopsi model regresi linier
+                        berganda dengan variabel kontrol ukuran perusahaan
+                        (Size) dan leverage (DER) untuk memitigasi
+                        bias...&rdquo;
+                      </div>
+
+                      <div className="flex justify-center my-1 text-slate-400">
+                        <span className="material-symbols-outlined text-lg animate-bounce">
+                          arrow_downward
+                        </span>
+                      </div>
+
+                      {/* Generated Question */}
+                      <div className="bg-surface-raised p-3 rounded-lg border border-border/60 text-xs text-text-primary leading-relaxed">
+                        <div className="text-[10px] text-accent font-bold uppercase mb-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">
+                            smart_toy
+                          </span>
+                          Pertanyaan AI yang Dihasilkan
+                        </div>
+                        &ldquo;Mengapa Anda memilih variabel kontrol ukuran
+                        perusahaan (Size) dan leverage (DER) dalam regresi
+                        linier berganda Anda? Bagaimana kontribusinya terhadap
+                        mitigasi bias?&rdquo;
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Deep Feature 2: Sanggahan Interaktif */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                   <div className="space-y-5">
                     <div className="inline-flex items-center gap-2 bg-accent-subtle text-accent border border-accent/20 px-3.5 py-1 rounded-full text-xs font-semibold">
@@ -418,10 +484,10 @@ export default function Home() {
                     </h3>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Di ruang sidang sesungguhnya, dosen tidak selalu puas
-                      dengan jawaban pertamamu. Phom didesain dengan mekanisme{" "}
-                      <b>sub-turn</b>. Jika argumen pertamamu lemah, AI penguji
-                      akan membantah jawaban Kamu dengan sanggahan kritis
-                      (maksimal 2 kali sanggahan).
+                      dengan jawaban pertamamu. Phom didesain dengan mekanisme
+                      <strong> sub-turn</strong>. Jika argumen pertamamu lemah,
+                      AI penguji akan membantah jawaban Anda dengan sanggahan
+                      kritis (maksimal 2 kali sanggahan).
                     </p>
                     <p className="font-body text-sm text-text-secondary leading-relaxed">
                       Mekanisme ini melatih stamina mental Anda untuk
@@ -431,24 +497,49 @@ export default function Home() {
                   </div>
                   <div className="bg-surface border border-border p-6 rounded-xl shadow-sm space-y-4">
                     <div className="flex justify-between items-center text-xs font-bold text-text-secondary border-b border-border/60 pb-3">
-                      <span>STATUS PERTANYAAN</span>
+                      <span>SIMULASI OBROLAN SIDANG</span>
                       <span className="text-accent bg-accent-subtle px-2 py-0.5 rounded border border-accent/10">
-                        Sanggahan 2/2
+                        Sanggahan 1/2
                       </span>
                     </div>
-                    <div className="bg-surface-raised p-4 rounded-lg border border-border/40 text-xs text-text-primary leading-relaxed">
-                      Definisi &ldquo;theoretical saturation&rdquo; Anda pada
-                      Bab 3 belum jelas. Anda menyebutkan wawancara selesai pada
-                      informan ke-15, tapi apa indikator saturasi datanya?
+                    {/* AI Question */}
+                    <div className="flex gap-2">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-primary">
+                        AI
+                      </div>
+                      <div className="bg-surface-raised p-3 rounded-r-lg rounded-bl-lg text-xs text-text-primary leading-relaxed max-w-[85%] border border-border/60">
+                        Definisi &ldquo;theoretical saturation&rdquo; Anda pada
+                        Bab 3 belum jelas. Anda menyebutkan wawancara selesai
+                        pada informan ke-15, tapi apa indikator saturasi
+                        datanya?
+                      </div>
                     </div>
-                    <div className="bg-primary text-white p-4 rounded-lg text-xs leading-relaxed text-right ml-10">
-                      Kami menentukan saturasi data saat 3 wawancara terakhir
-                      tidak lagi menghasilkan tema atau kode konseptual baru.
+                    {/* User Answer */}
+                    <div className="flex gap-2 justify-end">
+                      <div className="bg-primary text-white p-3 rounded-l-lg rounded-br-lg text-xs leading-relaxed max-w-[85%] text-left">
+                        Kami menentukan saturasi data saat 3 wawancara terakhir
+                        tidak lagi menghasilkan tema atau kode konseptual baru
+                        yang berbeda dari informan sebelumnya.
+                      </div>
+                      <div className="w-5 h-5 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-slate-700">
+                        U
+                      </div>
+                    </div>
+                    {/* AI Rebuttal (Orange Bubble) */}
+                    <div className="flex gap-2">
+                      <div className="w-5 h-5 rounded-full bg-orange-100 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-orange-600 border border-orange-200">
+                        AI
+                      </div>
+                      <div className="bg-[#F97316] text-white p-3 rounded-r-lg rounded-bl-lg text-xs leading-relaxed max-w-[85%] shadow-sm">
+                        Namun, bagaimana Anda membuktikan bahwa 3 wawancara
+                        terakhir benar-benar tidak membawa variasi baru? Apakah
+                        Anda menggunakan instrumen kodifikasi tertentu?
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Deep Feature 2 */}
+                {/* Deep Feature 3: Penilaian Komprehensif */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center lg:flex-row-reverse">
                   <div className="space-y-5 lg:order-2">
                     <div className="inline-flex items-center gap-2 bg-success-subtle text-success border border-success/20 px-3.5 py-1 rounded-full text-xs font-semibold">
@@ -488,16 +579,48 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between text-xs font-bold text-text-secondary">
-                        <span>Metodologi</span>
-                        <span>85/100</span>
+                    {/* Progress Bars for all 3 dimensions */}
+                    <div className="w-full space-y-4">
+                      {/* Metodologi */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-bold text-text-secondary">
+                          <span>Metodologi &amp; Validitas</span>
+                          <span>90/100</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: "90%" }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full"
-                          style={{ width: "85%" }}
-                        ></div>
+
+                      {/* Teori */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-bold text-text-secondary">
+                          <span>Penguasaan Teori</span>
+                          <span>80/100</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-indigo-500 rounded-full"
+                            style={{ width: "80%" }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      {/* Argumentasi */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-bold text-text-secondary">
+                          <span>Ketahanan Argumentasi</span>
+                          <span>60/100</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{ width: "60%" }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
                   </div>
